@@ -2,10 +2,6 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join('..', '..', 'src')))
 
-main_ns = {}
-with open('src/singlejson/version.py') as ver_file:
-    exec(ver_file.read(), main_ns)
-
 # Configuration file for the Sphinx documentation builder.
 #
 # For the full list of built-in configuration values, see the documentation:
@@ -17,7 +13,7 @@ with open('src/singlejson/version.py') as ver_file:
 project = 'singlejson'
 copyright = '2024, f.rader'
 author = 'f.rader'
-release = main_ns['__version__']
+release = '0.2.3'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
