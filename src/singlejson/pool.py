@@ -1,27 +1,65 @@
 """The main files handling the file pool."""
-from typing import Dict, Any
-from .fileutils import JSONFile, abs_filename
+from __future__ import annotations
 
-_file_pool: Dict[str, JSONFile] = {}
+from threading import Lock
+from typing import Any, Dict, Optional
+
+from .fileutils import JSONFile, abs_filename, PathOrSimilar, JSONSerializable
+from pathlib import Path
 
 
-def load(filename: str, default: Any = "{}") -> JSONFile:
+_pool_lock: Lock = Lock()
+_file_pool: Dict[Path, JSONFile] = {}
+
+
+def load(path: PathOrSimilar, default_data: JSONSerializable = None, **kwargs: Any) -> JSONFile:
     """
-    Open a JsonFile (synchronously)
-    :param filename: Path to JSON file on disk
-    :param default: Default file contents to save if file is nonexistent
-    :return: the corresponding JsonFile
+    Open a JSONFile (synchronously) with pooling per absolute path.
+    Backward-compat: accepts legacy "default" keyword.
     """
-    filename = abs_filename(filename)
-    if filename not in _file_pool:
-        _file_pool[filename] = JSONFile(filename, default=default)
-    return _file_pool[filename]
+    p = abs_filename(path)
+    key = p
+    with _pool_lock:
+        if key not in _file_pool:
+            jf = JSONFile(p, default_data=default_data, **kwargs)
+            _file_pool[key] = jf
+        return _file_pool[key]
 
 
-def sync():
+def sync() -> None:
     """
-    Sync changes to the filesystem
-    :return:
+    Sync all pooled files to the filesystem.
+    If you wish to adjust settings, change the default or change the JsonFile.settings property.
     """
-    for file in _file_pool.values():
-        file.save()
+    with _pool_lock:
+        for file in list(_file_pool.values()):
+            file.save()
+
+
+def reset() -> None:
+    """
+    Clear the file pool WITHOUT saving.
+    """
+    with _pool_lock:
+        _file_pool.clear()
+
+
+def close(path: Optional[PathOrSimilar] = None, *, save: bool = True) -> None:
+    """
+    Close one file (by path) or all files, optionally saving first.
+    If you wish to adjust settings, change the default or change the JsonFile.settings property.
+    :param path: The path of the file to close.
+    :param save: Whether to save the file or not.
+    """
+    with _pool_lock:
+        if path is None:
+            # Close all
+            if save:
+                for file in list(_file_pool.values()):
+                    file.save()
+            _file_pool.clear()
+        else:
+            p = abs_filename(path)
+            jf = _file_pool.pop(p, None)
+            if jf and save:
+                jf.save()

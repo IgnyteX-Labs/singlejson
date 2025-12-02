@@ -1,13 +1,25 @@
+"""Load and save JSON files easily across files.
+
+Public API:
+- Classes: JSONFile, JsonSerializationSettings
+- Functions: load, sync, reset, close
+- Defaults: DEFAULT_SERIALIZATION_SETTINGS
 """
-A package for easily maintaining JSON files
 
-open a JSON file using open()
-if you call open with the same filename again, the same object will be returned.
-sync all changes to disk using sync()
-"""
-from .fileutils import JSONFile
-from .pool import load, sync
+from .fileutils import (
+    JSONFile,
+    JsonSerializationSettings,
+    DEFAULT_SERIALIZATION_SETTINGS,
+)
+from .pool import load, sync, reset, close
+from .__about__ import __version__
 
-__all__ = ["JSONFile", "load", "sync", "VERSION"]
-
-VERSION: str = "0.2.3"
+__all__ = [
+    "JSONFile",
+    "JsonSerializationSettings",
+    "DEFAULT_SERIALIZATION_SETTINGS",
+    "load",
+    "sync",
+    "reset",
+    "close",
+]
