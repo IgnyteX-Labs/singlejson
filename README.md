@@ -3,6 +3,8 @@
 
 A very simple set of utilities for working with JSON in Python.
 
+View the [documentation](https://ignytex-labs.github.io/singlejson/) here.
+
 ## Features:
 * Easy loading of JSON files
 * Only one instance for each opened file
