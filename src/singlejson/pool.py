@@ -55,7 +55,8 @@ def close(path: Optional[PathOrSimilar] = None, *, save: bool = True) -> None:
         if path is None:
             # Close all
             if save:
-                sync()
+                for file in list(_file_pool.values()):
+                    file.save()
             _file_pool.clear()
         else:
             p = abs_filename(path)

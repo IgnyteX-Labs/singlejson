@@ -25,3 +25,12 @@ Issues = "https://github.com/IgnyteX-Labs/singlejson/issues"
 
 [tool.setuptools_scm]
 write_to = "src/singlejson/__about__.py"
+
+[project.optional-dependencies]
+# Documentation dependencies; install with `pip install .[docs]`
+# Sphinx 7+ pairs well with Furo; adjust if you need older Python targets
+docs = [
+    "sphinx>=7",
+    "furo>=2024.1.29",
+]
+dev = ["pytest"]

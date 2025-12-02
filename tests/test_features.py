@@ -58,7 +58,7 @@ def test_close_save_and_without_save(tmp_path: Path):
     p = tmp_path / "close.json"
     jf = singlejson.load(p, default_data={})
     jf.json["y"] = 7
-    # Close without saving first cleared instance should not persist
+    # Close without saving; first cleared instance should not persist
     singlejson.close(p, save=False)
     assert p.exists()  # file created by prepare with default
     obj = JSONFile(p)
