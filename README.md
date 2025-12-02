@@ -1,5 +1,5 @@
 # singlejson
-![GitHub issues](https://img.shields.io/github/issues/Qrashi/singlejson) ![PyPI](https://img.shields.io/pypi/v/singlejson)
+![GitHub issues](https://img.shields.io/github/issues/IgnyteX-Labs/singlejson) ![PyPI](https://img.shields.io/pypi/v/singlejson)
 
 A very simple set of utilities for working with JSON in Python.
 

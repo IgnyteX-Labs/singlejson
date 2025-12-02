@@ -7,17 +7,16 @@ from dataclasses import dataclass
 from json import dump, load
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Any, TypeAlias, Union
-
+from typing import Any, TypeAlias, Union, Optional
 
 JSONSerializable: TypeAlias = (
-    dict[str, "JSONSerializable"]
-    | list["JSONSerializable"]
-    | str
-    | int
-    | float
-    | bool
-    | None
+        dict[str, "JSONSerializable"]
+        | list["JSONSerializable"]
+        | str
+        | int
+        | float
+        | bool
+        | None
 )
 
 PathOrSimilar = Union[str, os.PathLike[str]]
@@ -70,21 +69,21 @@ class JSONFile:
     __auto_save: bool
 
     def __init__(
-        self,
-        path: PathOrSimilar,
-        default_data: Any = None,
-        *,
-        encoding: str = "utf-8",
-        settings: JsonSerializationSettings = None,
-        auto_save: bool = True,
-        **kwargs: Any,
+            self,
+            path: PathOrSimilar,
+            default_data: Any = None,
+            *,
+            encoding: str = "utf-8",
+            settings: Optional[JsonSerializationSettings] = None,
+            auto_save: bool = True,
+            **kwargs: Any,
     ) -> None:
         """
         Create a new json file instance and load data from disk
         :param path: path to file (str or PathLike)
         :param default_data: default data to save if file is empty / nonexistent
         :param encoding: file encoding
-        :param settings: JsonSerializationSettings object (JSONSerializable)
+        :param settings: JsonSerializationSettings object
         :param auto_save: if True, context manager will save on exit
         """
         self.__path = abs_filename(path)
@@ -129,10 +128,12 @@ class JSONFile:
     def save(self, settings: JsonSerializationSettings | None = None) -> None:
         """
         Save the data to the disk
+        :param settings: JsonSerializationSettings object
         """
-        settings = settings or DEFAULT_SERIALIZATION_SETTINGS
+        settings = settings or self.settings
         try:
-            prepare(self.__path, default=json.dumps(self.__default_data, indent=settings.indent, sort_keys=settings.sort_keys))
+            prepare(self.__path,
+                    default=json.dumps(self.__default_data, indent=settings.indent, sort_keys=settings.sort_keys))
             with self.__path.open("w", encoding=self.__encoding) as file:
                 dump(
                     self.json,
@@ -171,6 +172,7 @@ class JSONFile:
                 if "temp_name" in locals() and os.path.exists(temp_name):
                     os.remove(temp_name)
             except Exception:
+#                 # Ignore cleanup errors to avoid masking the original exception
                 pass
             raise FileAccessError(f"Cannot atomically write file '{self.__path}': {e}") from e
 
@@ -181,6 +183,7 @@ class JSONFile:
     def __exit__(self, exc_type, exc, tb) -> None:
         if exc_type is None and self.__auto_save:
             self.save()
+
 
 # Default settings instance used by JSONFile.save() when not provided
 DEFAULT_SERIALIZATION_SETTINGS = JsonSerializationSettings()

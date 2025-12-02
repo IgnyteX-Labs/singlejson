@@ -5,10 +5,11 @@ from threading import Lock
 from typing import Any, Dict, Optional
 
 from .fileutils import JSONFile, abs_filename, PathOrSimilar, JSONSerializable
+from pathlib import Path
 
 
 _pool_lock: Lock = Lock()
-_file_pool: Dict[object, JSONFile] = {}
+_file_pool: Dict[Path, JSONFile] = {}
 
 
 def load(path: PathOrSimilar, default_data: JSONSerializable = None, **kwargs: Any) -> JSONFile:
@@ -28,7 +29,7 @@ def load(path: PathOrSimilar, default_data: JSONSerializable = None, **kwargs: A
 def sync() -> None:
     """
     Sync all pooled files to the filesystem.
-    If you with to adjust settings, change the default or change the JsonFile.settings property.
+    If you wish to adjust settings, change the default or change the JsonFile.settings property.
     """
     with _pool_lock:
         for file in list(_file_pool.values()):
@@ -46,7 +47,7 @@ def reset() -> None:
 def close(path: Optional[PathOrSimilar] = None, *, save: bool = True) -> None:
     """
     Close one file (by path) or all files, optionally saving first.
-    If you with to adjust settings, change the default or change the JsonFile.settings property.
+    If you wish to adjust settings, change the default or change the JsonFile.settings property.
     :param path: The path of the file to close.
     :param save: Whether to save the file or not.
     """

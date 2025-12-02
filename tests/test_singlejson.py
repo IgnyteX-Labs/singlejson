@@ -1,8 +1,6 @@
 import json
 from pathlib import Path
 
-import pytest
-
 import singlejson
 from singlejson.fileutils import JSONFile, abs_filename
 
@@ -34,7 +32,7 @@ def test_jsonfile_save_and_reload(tmp_path: Path):
     jf = JSONFile(str(f), default={})
     jf.json["x"] = 42
     jf.save()
-    # Load again to ensure persistence
+    # Load again to ensQrashiure persistence
     jf2 = JSONFile(str(f))
     assert jf2.json["x"] == 42
 
