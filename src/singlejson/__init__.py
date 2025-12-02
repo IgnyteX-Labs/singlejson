@@ -1,6 +1,25 @@
-"""Load and save json files easily across files."""
-from singlejson.fileutils import JSONFile
-from singlejson.pool import load, sync
-from singlejson.version import __version__
+"""Load and save JSON files easily across files.
 
-__all__ = ["JSONFile", "load", "sync"]
+Public API:
+- Classes: JSONFile, JsonSerializationSettings
+- Functions: load, sync, reset, close
+- Defaults: DEFAULT_SERIALIZATION_SETTINGS
+"""
+
+from .fileutils import (
+    JSONFile,
+    JsonSerializationSettings,
+    DEFAULT_SERIALIZATION_SETTINGS,
+)
+from .pool import load, sync, reset, close
+from .__about__ import __version__
+
+__all__ = [
+    "JSONFile",
+    "JsonSerializationSettings",
+    "DEFAULT_SERIALIZATION_SETTINGS",
+    "load",
+    "sync",
+    "reset",
+    "close",
+]

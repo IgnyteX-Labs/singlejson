@@ -20,10 +20,10 @@ singlejson.pool module
    :undoc-members:
    :show-inheritance:
 
-singlejson.version module
--------------------------
+singlejson.__about__ module
+---------------------------
 
-.. automodule:: singlejson.version
+.. automodule:: singlejson.__about__
    :members:
    :undoc-members:
    :show-inheritance:
