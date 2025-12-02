@@ -27,11 +27,3 @@ Pooling
    :undoc-members:
    :show-inheritance:
 
-
-Version metadata
-----------------
-
-.. automodule:: singlejson.__about__
-   :members:
-   :undoc-members:
-   :show-inheritance:
