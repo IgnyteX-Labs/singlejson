@@ -1,5 +1,5 @@
 # singlejson
-[![DeepSource](https://deepsource.io/gh/Qrashi/singlejson.svg/?label=active+issues&show_trend=true&token=B2cM2gDNTg_l3cKdS6araDaE)](https://deepsource.io/gh/Qrashi/singlejson/?ref=repository-badge) ![GitHub issues](https://img.shields.io/github/issues/Qrashi/singlejson) ![PyPI](https://img.shields.io/pypi/v/singlejson)
+![GitHub issues](https://img.shields.io/github/issues/Qrashi/singlejson) ![PyPI](https://img.shields.io/pypi/v/singlejson)
 
 A very simple set of utilities for working with JSON in Python.
 
