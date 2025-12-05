@@ -48,6 +48,7 @@ def close(path: Optional[PathOrSimilar] = None, *, save: bool = True) -> None:
     """
     Close one file (by path) or all files, optionally saving first.
     If you wish to adjust settings, change the default or change the JsonFile.settings property.
+
     :param path: The path of the file to close.
     :param save: Whether to save the file or not.
     """
