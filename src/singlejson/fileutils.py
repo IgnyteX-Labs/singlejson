@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import logging
 from dataclasses import dataclass
 from json import dump, load
 from pathlib import Path
@@ -22,6 +23,8 @@ JSONSerializable: TypeAlias = (
 PathOrSimilar = Union[str, os.PathLike[str]]
 
 
+logger = logging.getLogger(__name__)
+
 @dataclass(frozen=True)
 class JsonSerializationSettings:
     indent: int = 4
@@ -32,6 +35,7 @@ class JsonSerializationSettings:
 def abs_filename(file: PathOrSimilar) -> Path:
     """
     Return the absolute path of a file as pathlib.Path
+
     :param file: File to get the absolute path of
     :return: Absolute Path of file
     """
@@ -41,6 +45,7 @@ def abs_filename(file: PathOrSimilar) -> Path:
 def prepare(file: PathOrSimilar, default: str) -> None:
     """
     Prepare a file (check if it exists and create it if not)
+
     :param file: File to open
     :param default: default text to save if file is nonexistent
     """
@@ -80,6 +85,7 @@ class JSONFile:
     ) -> None:
         """
         Create a new json file instance and load data from disk
+
         :param path: path to file (str or PathLike)
         :param default_data: default data to save if file is empty / nonexistent
         :param encoding: file encoding
@@ -101,6 +107,7 @@ class JSONFile:
     def path(self) -> Path:
         """
         Return the absolute path of the file
+
         :return:
         """
         return self.__path
@@ -121,13 +128,14 @@ class JSONFile:
         except json.JSONDecodeError as e:
             # Recover to default data (do not raise)
             self.json = json.loads(json.dumps(self.__default_data))  # deep copy via json
-            print(f"Cannot read json from file '{self.__path}'. Using default!\nDecoding error: {e}")
+            logger.log(logging.WARN, f"Cannot read json from file '{self.__path}'. Using default!\nDecoding error: {e}")
         except (PermissionError, OSError) as e:
             raise FileAccessError(f"Cannot read file '{self.__path}': {e}") from e
 
     def save(self, settings: JsonSerializationSettings | None = None) -> None:
         """
         Save the data to the disk
+
         :param settings: JsonSerializationSettings object
         """
         settings = settings or self.settings
@@ -149,6 +157,7 @@ class JSONFile:
         """
         Save atomically by writing to a temp file and replacing the target.
         Specify serialization settings with JSONFile.settings.
+
         :param tmp_suffix: suffix to add to target file
         :return:
         """
@@ -172,12 +181,12 @@ class JSONFile:
                 if "temp_name" in locals() and os.path.exists(temp_name):
                     os.remove(temp_name)
             except Exception:
-#                 # Ignore cleanup errors to avoid masking the original exception
+                # Ignore cleanup errors to avoid masking the original exception
                 pass
             raise FileAccessError(f"Cannot atomically write file '{self.__path}': {e}") from e
 
     # Context manager support
-    def __enter__(self) -> "JSONFile":
+    def __enter__(self) -> JSONFile:
         return self
 
     def __exit__(self, exc_type, exc, tb) -> None:
