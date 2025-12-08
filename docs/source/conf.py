@@ -36,10 +36,15 @@ def _short_version(ver: str) -> str:
     # Take first three numeric components (e.g., 1.2.3) if present.
     parts = ver.split('.')
     if len(parts) >= 2:
-        return '.'.join(parts[:2])
+        return '.'.join(parts[:3])
     return ver
 
 version = _short_version(release)
+
+rst_prolog = f"""
+    .. |version| replace:: {version}
+    .. |release| replace:: {release}
+"""
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -48,6 +53,10 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.githubpages',
+    'sphinx_substitution_extensions'
 ]
 
 # Autosummary: generate stub pages for autosummary directives
