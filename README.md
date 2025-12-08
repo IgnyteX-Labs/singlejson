@@ -27,6 +27,7 @@ file.json["fun"] = True  # Edit some values in the JSONfile
 ```
 But if we try to load the same file from the filesystem again, we get the same object:
 ```python
+import singlejson
 file2 = singlejson.load('file.json')
 print(file2.json["fun"])  # will output True
 ```
