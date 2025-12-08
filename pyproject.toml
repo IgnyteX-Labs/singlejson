@@ -32,8 +32,8 @@ fallback_version = "0+unknown"
 # Documentation dependencies; install with `pip install .[docs]`
 # Sphinx 7+ pairs well with Furo; adjust if you need older Python targets
 docs = [
-    "sphinx>=9.0.0",
-    "furo>=2024.1.29",
+    "sphinx>=8.3.0",
+    "furo>=2025.9.25",
     "sphinx-substitution-extensions"
 ]
 dev = ["pytest"]
