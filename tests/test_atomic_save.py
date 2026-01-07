@@ -3,6 +3,7 @@ from pathlib import Path
 
 from singlejson.fileutils import JSONFile
 
+
 def test_save_atomic_is_alias_and_warns(tmp_path: Path):
     p = tmp_path / "alias.json"
     jf = JSONFile(p, default_data={})

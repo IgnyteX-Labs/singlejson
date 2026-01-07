@@ -9,7 +9,8 @@ import threading
 import warnings
 from copy import deepcopy
 from dataclasses import dataclass
-from json import dumps, load as json_load
+from json import dumps
+from json import load as json_load
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from types import TracebackType
