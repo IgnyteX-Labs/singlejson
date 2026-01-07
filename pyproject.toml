@@ -29,9 +29,11 @@ license-files = ["LICEN[CS]E*"]
 [project.urls]
 Homepage = "https://github.com/IgnyteX-Labs/singlejson"
 Issues = "https://github.com/IgnyteX-Labs/singlejson/issues"
+Documentation = "https://https://singlejson.readthedocs.io/"
 
 [tool.setuptools_scm]
 write_to = "src/singlejson/__about__.py"
+fallback_version = "0+unknown"
 
 [dependency-groups]
 test = [

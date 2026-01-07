@@ -4,6 +4,8 @@
 
 A simple set of utilities for working with JSON in Python.
 
+View the [documentation](https://singlejson.readthedocs.io/) here.
+
 ## Features:
 * Easy loading of JSON files
 * One instance for each opened file
