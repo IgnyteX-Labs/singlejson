@@ -37,11 +37,3 @@ The functions here are also available directly from the :mod:`singlejson` packag
    :undoc-members:
    :show-inheritance:
 
-
-Version metadata
-----------------
-
-.. automodule:: singlejson.__about__
-   :members:
-   :undoc-members:
-   :show-inheritance:

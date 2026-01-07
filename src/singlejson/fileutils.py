@@ -327,19 +327,11 @@ class JSONFile:
                     with self.__path.open("r", encoding=self.settings.encoding) as file:
                         self.json = json_load(file)
                 except json.JSONDecodeError as e2:
-                    if not recover:
-                        if self.__default_path:
-                            raise DefaultNotJSONSerializableError(
-                                f"Default JSON file '{self.__default_path}' "
-                                f"is not valid JSON on retry: {e2}"
-                            ) from e2
-                        raise JSONDeserializationError(
-                            f"Cannot read json from file '{self.__path}' on retry: {e2}"
-                        ) from e2
-                    # fallback to empty dict if recovery still fails
+                    # No need to check for recover=False here, we are already recovering
                     logger.warning(
-                        "Recovery also failed for '%s'. Falling back to empty object.",
-                        self.__path)
+                        "Recovery also failed for '%s'. Falling back to empty object."
+                        "Decoding error: %s",
+                        self.__path, e2)
                     _atomic_write_text(self.__path, "{}",
                                        encoding=self.settings.encoding)
                     self.json = {}
