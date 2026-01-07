@@ -2,6 +2,13 @@
 requires = ["setuptools>=61", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.package-data]
+singlejson = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
 [project]
 name = "singlejson"
 dynamic = ["version"]
@@ -10,7 +17,7 @@ authors = [
 ]
 description = " Load and save json files as a global object "
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
@@ -26,11 +33,38 @@ Issues = "https://github.com/IgnyteX-Labs/singlejson/issues"
 [tool.setuptools_scm]
 write_to = "src/singlejson/__about__.py"
 
-[project.optional-dependencies]
-# Documentation dependencies; install with `pip install .[docs]`
-# Sphinx 7+ pairs well with Furo; adjust if you need older Python targets
+[dependency-groups]
+test = [
+    "mypy>=1.19.1",
+    "pytest>=9.0.2",
+    "ruff>=0.14.10",
+]
 docs = [
+    "sphinx-substitution-extensions>=2025.12.15",
     "sphinx>=7",
     "furo>=2024.1.29",
 ]
-dev = ["pytest"]
+dev = [
+    {include-group = "test"},
+    {include-group = "docs"},
+]
+
+[tool.ruff]
+target-version = "py310"
+src = ["src", "tests"]
+exclude = ["**/__about__.py", "docs"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "S101",  # use of assert
+    "PLR2004",  # magic values
+    "D",  # docstrings
+    "E501"
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+strict = true
+python_version = "3.10"

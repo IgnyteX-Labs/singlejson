@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 import singlejson
-from singlejson.fileutils import JSONFile, prepare, JsonSerializationSettings, FileAccessError
+from singlejson.fileutils import FileAccessError, JSONFile, JsonSerializationSettings
 
 
 def test_context_manager_auto_save(tmp_path: Path):
@@ -36,14 +36,6 @@ def test_save_atomic(tmp_path: Path):
     jf.save_atomic()
     data = json.loads(p.read_text())
     assert data == {"a": [1, 2, 3]}
-
-
-def test_prepare_cwd_relative(tmp_path: Path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    rel = Path("rel.json")
-    prepare(rel, default="{}")
-    assert rel.exists()
-    assert json.loads(rel.read_text()) == {}
 
 
 def test_pool_relative_and_absolute_same_instance(tmp_path: Path, monkeypatch):

@@ -1,23 +1,80 @@
-.. singlejson documentation master file, created by
-   sphinx-quickstart on Mon May 20 19:39:32 2024.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to singlejson's documentation!
+singlejson
 ======================================
 
 Singlejson is a tiny helper to load and save JSON files as shared objects
-across your codebase. It offers a friendly `JSONFile` wrapper, a thread‑safe
+across your codebase.
+
+It offers a friendly `JSONFile` wrapper, a thread‑safe
 pool for shared instances, and configurable serialization.
 
-Get started in a minute using the guide below, or dive into the API reference.
+Installation & basic usage
+====================================
+Install with pip / uv:
+
+.. code-block:: bash
+    :substitutions:
+
+    pip install singlejson==|release| #For this documentation version
+    uv add singlejson==|release| #For this documentation version
+
+
+Here is a quick example to get you started:
+
+.. code-block:: python
+
+    from singlejson import JSONFile, load, sync, JsonSerializationSettings, DEFAULT_SERIALIZATION_SETTINGS
+
+    # Work with a single file
+    with JSONFile("settings.json", default_data={"theme": "dark"}) as jf:
+        jf.json["theme"] = "white"  # saved automatically on clean exit
+
+    # Shared instance via pool
+    jf = load("settings.json", default_data={"theme": "dark"})
+    print(jf.json["theme"]) # > white
+
+    jf.json["theme"] = "blue" # modify in memory, not yet saved
+
+    jf2 = load("data.json", default_data={"theme": "dark"})
+    print(jf2.json["theme"]) # > blue as the in memory object is shared.
+    print(jf == jf2) # > True
+
+    sync()  # save all files opened to disk
+
+    # Control formatting
+
+    # Set per instance
+    jf.settings = JsonSerializationSettings(indent=2, sort_keys=True, ensure_ascii=False)
+    # Or globally
+    DEFAULT_SERIALIZATION_SETTINGS = JsonSerializationSettings(...)
+
+    jf.save()  # Will respect settings
+
+
+Why singlejson?
+---------------
+
+- Minimal API with sensible defaults
+- All files are written atomically to avoid corruption (save to temp file which is then renamed to the original)
+- Various ways of handling defaults. :ref:`defaults`
+- Robust error handling (invalid JSON recovery to default, clear exceptions) :ref:`error_handling`
+- Thread-safe pooling so the same path uses one in-memory object :ref:`pooling`
+- Configurable serialization settings :ref:`serialization_settings`
+
+
+Further reading
+"""""""""""""""""""""""
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Guide
+    :maxdepth: 1
+    :caption: Guide
+    :glob:
 
-   getting_started
-   advanced
+    defaults
+    serialization_settings
+    error_handling
+    pooling
+    context_*
+    development
 
 .. toctree::
    :maxdepth: 2
