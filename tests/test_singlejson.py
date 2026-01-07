@@ -32,7 +32,7 @@ def test_jsonfile_save_and_reload(tmp_path: Path):
     jf = JSONFile(str(f), default_data={})
     jf.json["x"] = 42
     jf.save()
-    # Load again to ensQrashiure persistence
+    # Load again to ensure persistence
     jf2 = JSONFile(str(f))
     assert jf2.json["x"] == 42
 

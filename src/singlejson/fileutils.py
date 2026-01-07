@@ -9,7 +9,7 @@ import threading
 import warnings
 from copy import deepcopy
 from dataclasses import dataclass
-from json import dumps, load
+from json import dumps, load as json_load
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from types import TracebackType
@@ -182,7 +182,7 @@ class JSONFile:
                     # Load from file
                     try:
                         with path.open("r", encoding=self.settings.encoding) as file:
-                            json.load(file)
+                            json_load(file)
                             # If this works without errors, fine!
                     except (PermissionError, OSError) as e:
                         raise FileAccessError(
@@ -216,6 +216,8 @@ class JSONFile:
         # Load from disk (this will create the file if needed and apply defaults)
         if load_file:
             self.reload(recover=strict)
+        else:
+            self.json = None
 
     def __reinstantiate_default(self, recover: bool) -> None:
         """
@@ -296,7 +298,7 @@ class JSONFile:
             # 2: File now surely exists
             try:
                 with self.__path.open("r", encoding=self.settings.encoding) as file:
-                    self.json = load(file)
+                    self.json = json_load(file)
             except (PermissionError, OSError) as e:
                 raise FileAccessError(
                     f"Cannot read file '{self.__path}': {e}"
@@ -322,7 +324,7 @@ class JSONFile:
                 # Try loading again (single safe retry to avoid infinite recursion)
                 try:
                     with self.__path.open("r", encoding=self.settings.encoding) as file:
-                        self.json = load(file)
+                        self.json = json_load(file)
                 except json.JSONDecodeError as e2:
                     if not recover:
                         if self.__default_path:
@@ -356,7 +358,8 @@ class JSONFile:
                 # Ensure directory exists
                 self.__path.parent.mkdir(parents=True, exist_ok=True)
                 # Serialize to text then atomically write
-                text = dumps(self.json,
+                data_to_save = self.json
+                text = dumps(data_to_save,
                              indent=settings.indent,
                              sort_keys=settings.sort_keys,
                              ensure_ascii=settings.ensure_ascii)

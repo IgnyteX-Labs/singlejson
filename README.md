@@ -16,7 +16,7 @@ pip install singlejson
 ```
 
 ## Usage:
-Loading JSON from file:
+Loading JSON from a file:
 ```python
 import singlejson
 
@@ -33,7 +33,8 @@ print(file2.json["fun"])  # > True
 
 To save the file back to the disk we call ``file.save()``
 
-If the requested file doesn't exist, the file and its parent directories will be created and *default_data* will be written.
+If the requested file doesn't exist, the file and its parent directories
+will be created and *default_data* will be written.
 ```text
 import singlejson
 file = singlejson.load('new_file.json', default_data={"fun": False})
@@ -54,4 +55,6 @@ visit the [documentation](https://singlejson.readthedocs.io/)
 
 
 ### Contributing:
-This is just a fun project of mine mainly to try out python packaging. If you would like to contribute or have a feature-request, please [open an issue or pull request](https://github.com/Qrashi/singlejson/issues/new).
+This is just a fun project of mine mainly to try out python packaging. 
+If you would like to contribute or have a feature-request,
+please [open an issue or pull request](https://github.com/Qrashi/singlejson/issues/new).

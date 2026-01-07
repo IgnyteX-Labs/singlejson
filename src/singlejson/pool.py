@@ -21,13 +21,13 @@ def load(path: PathOrSimilar,
          default_path: PathOrSimilar | None = None,
          *,
          settings: JsonSerializationSettings | None = None,
-         auto_save: bool = False,
+         auto_save: bool = True,
          strict: bool = True,
          load_file: bool = True,
          ) -> JSONFile:
     """
     Open a new JSONFile and add it to the pool.
-    Specify defaults preferably with default_factory or default_path.
+    Specify defaults preferably with default_data or default_path.
 
     :param path: path to file (str or PathLike)
     :param default_data:
