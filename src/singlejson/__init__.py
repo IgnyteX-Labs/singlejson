@@ -1,15 +1,16 @@
 """Load and save JSON files easily across files.
 
 Public API:
-- Classes: JSONFile, JsonSerializationSettings
-- Functions: load, sync, reset, close
-- Defaults: DEFAULT_SERIALIZATION_SETTINGS
+    - Classes: JSONFile, JsonSerializationSettings
+    - Functions: load, sync, reset, close
+    - Defaults: DEFAULT_SERIALIZATION_SETTINGS
 """
 
+from .__about__ import __version__
 from .fileutils import (
+    DEFAULT_SERIALIZATION_SETTINGS,
     JSONFile,
     JsonSerializationSettings,
-    DEFAULT_SERIALIZATION_SETTINGS,
 )
 from .pool import load, sync, reset, close
 try:
@@ -25,11 +26,12 @@ except Exception:  # file not generated yet (e.g., fresh clone)
         __version__ = "0+unknown"
 
 __all__ = [
-    "JSONFile",
-    "JsonSerializationSettings",
-    "DEFAULT_SERIALIZATION_SETTINGS",
     "load",
+    "DEFAULT_SERIALIZATION_SETTINGS",
     "sync",
+    "JSONFile",
     "reset",
     "close",
+    "JsonSerializationSettings",
+    "__version__",
 ]

@@ -1,5 +1,6 @@
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join('..', '..', 'src')))
 
 # Configuration file for the Sphinx documentation builder.
@@ -18,7 +19,8 @@ author = 'f.rader'
 # Important: avoid defining a callable named `version` in this module, because Sphinx expects
 # `version` config value to be a string. We alias the import to `pkg_version` to prevent clashes.
 try:
-    from importlib.metadata import version as pkg_version, PackageNotFoundError
+    from importlib.metadata import PackageNotFoundError
+    from importlib.metadata import version as pkg_version
     try:
         release = pkg_version('singlejson')
     except PackageNotFoundError:
@@ -41,13 +43,15 @@ def _short_version(ver: str) -> str:
 
 version = _short_version(release)
 
-rst_prolog = f"""
-    .. |version| replace:: {version}
-    .. |release| replace:: {release}
-"""
-
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
+
+autoclass_content = 'both'
+
+rst_prolog = f"""
+.. |release| replace:: {release}
+.. |version| replace:: {version}
+"""
 
 extensions = [
     'sphinx.ext.autodoc',
@@ -63,7 +67,7 @@ extensions = [
 autosummary_generate = True
 
 templates_path = ['_templates']
-exclude_patterns = []
+exclude_patterns = ['advanced/*', 'generated/*']
 
 
 
