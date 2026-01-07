@@ -195,7 +195,7 @@ class JSONFile:
                 else:
                     raise DefaultNotJSONSerializableError(
                         f"Default JSON file '{path}' does not exist.")
-            # Wether checked or not, use default_path default initialization method.
+            # Whether checked or not, use default_path default initialization method.
             self.__default_path = default_path
 
         else:
