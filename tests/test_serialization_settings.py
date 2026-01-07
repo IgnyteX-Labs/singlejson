@@ -1,8 +1,10 @@
 from pathlib import Path
 
-
 import singlejson
-from singlejson.fileutils import JSONFile, JsonSerializationSettings, DEFAULT_SERIALIZATION_SETTINGS
+from singlejson.fileutils import (
+    JSONFile,
+    JsonSerializationSettings,
+)
 
 
 def read_text(p: Path) -> str:

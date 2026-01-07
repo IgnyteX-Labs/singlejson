@@ -11,7 +11,8 @@ from .fileutils import (
     JSONFile,
     JsonSerializationSettings,
 )
-from .pool import load, sync, reset, close
+from .pool import close, load, reset, sync
+
 try:
     # Prefer the file written by setuptools_scm at build/install time
     from .__about__ import __version__  # type: ignore
