@@ -1,3 +1,6 @@
+# __about__.py file
+src/singlejson/__about__.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

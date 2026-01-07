@@ -1,35 +1,82 @@
 """The main files handling the file pool."""
 from __future__ import annotations
 
-from threading import Lock
-from typing import Any, Dict, Optional
-
-from .fileutils import JSONFile, abs_filename, PathOrSimilar, JSONSerializable
 from pathlib import Path
+from threading import Lock
 
+from .fileutils import (
+    JSONFile,
+    JSONSerializable,
+    JsonSerializationSettings,
+    PathOrSimilar,
+    abs_filename,
+)
 
 _pool_lock: Lock = Lock()
-_file_pool: Dict[Path, JSONFile] = {}
+_file_pool: dict[Path, JSONFile] = {}
 
 
-def load(path: PathOrSimilar, default_data: JSONSerializable = None, **kwargs: Any) -> JSONFile:
+def load(path: PathOrSimilar,
+         default_data: JSONSerializable | None = None,
+         default_path: PathOrSimilar | None = None,
+         *,
+         settings: JsonSerializationSettings | None = None,
+         auto_save: bool = True,
+         strict: bool = True,
+         load_file: bool = True,
+         ) -> JSONFile:
     """
-    Open a JSONFile (synchronously) with pooling per absolute path.
-    Backward-compat: accepts legacy "default" keyword.
+    Open a new JSONFile and add it to the pool.
+    Specify defaults preferably with default_data or default_path.
+
+    :param path: path to file (str or PathLike)
+    :param default_data:
+        Default data to use if file is nonexistent or corrupted.
+        Keep in mind that None is serializable as JSON
+        "null" - will not throw an error if not specified.
+    :param default_path:
+        **Overrides** default_data if provided.
+        Path to a JSON file to use as default data.
+    :param settings: JsonSerializationSettings object
+    :param auto_save: if True, context manager will save on exit
+    :param strict:
+        if True, will throw error if file cannot be read
+        or if default_data is not JSON-serializable
+    :param load_file:
+        True by default, causes file to be loaded on init.
+        Set to False to suppress loading.
+
+    :raises ~singlejson.fileutils.FileAccessError:
+        if file cannot be accessed (always)
+    :raises ~singlejson.fileutils.JSONDeserializationError:
+        if strict is True and an error occurs during loading
+    :raises ~singlejson.fileutils.DefaultNotJSONSerializableError:
+        if strict is True and default_data is not JSON-serializable
+
+    :return: pooled :class:`~singlejson.fileutils.JSONFile` instance
+    :rtype: ~singlejson.fileutils.JSONFile
     """
-    p = abs_filename(path)
-    key = p
+    path = abs_filename(path)
+    key = path
     with _pool_lock:
         if key not in _file_pool:
-            jf = JSONFile(p, default_data=default_data, **kwargs)
-            _file_pool[key] = jf
+            jsonfile = JSONFile(path,
+                                default_data=default_data,
+                                default_path=default_path,
+                                auto_save=auto_save,
+                                settings=settings,
+                                strict=strict,
+                                load_file=load_file
+                                )
+            _file_pool[key] = jsonfile
         return _file_pool[key]
 
 
 def sync() -> None:
     """
     Sync all pooled files to the filesystem.
-    If you wish to adjust settings, change the default or change the JsonFile.settings property.
+    If you wish to adjust settings, change the default
+    or change the JsonFile.settings property.
     """
     with _pool_lock:
         for file in list(_file_pool.values()):
@@ -44,11 +91,11 @@ def reset() -> None:
         _file_pool.clear()
 
 
-def close(path: Optional[PathOrSimilar] = None, *, save: bool = True) -> None:
+def close(path: PathOrSimilar | None = None, *, save: bool = True) -> None:
     """
     Close one file (by path) or all files, optionally saving first.
-    If you wish to adjust settings, change the default or change the JsonFile.settings property.
-
+    If you wish to adjust settings, change the default
+    or change the JsonFile.settings property.
     :param path: The path of the file to close.
     :param save: Whether to save the file or not.
     """
