@@ -1,11 +1,13 @@
 singlejson
 ======================================
 
-Singlejson is a tiny helper to load and save JSON files as shared objects
-across your codebase.
+is a tiny helper to load and save JSON files as shared objects across your codebase.
 
-It offers a friendly `JSONFile` wrapper, a thread‑safe
-pool for shared instances, and configurable serialization.
+It is meant to be as simple as possible. Features include
+
+* One JSON file per python instance
+* Easy default handling and graceful recovery to defaults
+* Atomic writes to avoid corruption
 
 Installation & basic usage
 ====================================
