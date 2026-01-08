@@ -84,9 +84,7 @@ def sync() -> None:
 
 
 def reset() -> None:
-    """
-    Clear the file pool WITHOUT saving.
-    """
+    """Clear the file pool WITHOUT saving."""
     with _pool_lock:
         _file_pool.clear()
 
@@ -96,6 +94,7 @@ def close(path: PathOrSimilar | None = None, *, save: bool = True) -> None:
     Close one file (by path) or all files, optionally saving first.
     If you wish to adjust settings, change the default
     or change the JsonFile.settings property.
+
     :param path: The path of the file to close.
     :param save: Whether to save the file or not.
     """

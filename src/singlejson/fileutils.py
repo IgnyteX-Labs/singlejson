@@ -75,10 +75,7 @@ def _atomic_write_text(path: Path, text: str, encoding: str = "utf-8") -> None:
 
 
 def _atomic_copy_file(src: Path, dest: Path) -> None:
-    """
-    Copy a file into dest atomically by copying to a temp file and then replacing.
-
-    """
+    """Copy a file into dest atomically by copying to a temp file and then replacing."""
     dest.parent.mkdir(parents=True, exist_ok=True)
     # create temp file name in destination dir
     with NamedTemporaryFile("wb", dir=dest.parent, delete=False, suffix=".tmp") as tf:
@@ -116,9 +113,7 @@ class JSONDeserializationError(Exception):
 
 
 class JSONFile:
-    """
-    A .json file on the disk.
-    """
+    """A .json file on the disk."""
 
     __path: Path  # Full absolute path
     json: Any
@@ -227,8 +222,6 @@ class JSONFile:
         :param recover:
             If True, recover when an error occurs during default loading.
             Otherwise will throw DefaultNotJSONSerializableError.
-
-        :return:
         """
         with self._lock:
             if self.__default_path:
@@ -400,5 +393,5 @@ class JSONFile:
 
 # Default settings instance used by JSONFile.save() when not provided
 DEFAULT_SERIALIZATION_SETTINGS = JsonSerializationSettings()
-"""Default JsonSerializationSettings used by JSONFile instances 
+"""Default JsonSerializationSettings used by JSONFile instances
 with indent=4, sort_keys=True, ensure_ascii=False"""
