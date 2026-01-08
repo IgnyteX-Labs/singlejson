@@ -49,6 +49,7 @@ docs = [
 dev = [
     {include-group = "test"},
     {include-group = "docs"},
+    "pre-commit>=4.5.1",
 ]
 
 [tool.ruff]

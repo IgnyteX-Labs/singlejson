@@ -21,6 +21,15 @@ Create a virtual environment and install the dev dependencies:
 This will both download dependencies to test and build the documentation.
 Other possible dependency groups are ``test`` and ``docs``.
 
+Pre commit checks with pre-commit
+----------------------------------
+This project uses `pre-commit <https://pre-commit.com/>`_ to manage git hooks for
+code quality checks.
+To install the git hooks, run:
+.. code-block:: bash
+
+    uv run --group dev pre-commit install
+
 Running Tests and Linting
 -------------------------
 
