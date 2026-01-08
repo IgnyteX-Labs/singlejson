@@ -1,4 +1,5 @@
 """The main files handling the file pool."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -16,15 +17,16 @@ _pool_lock: Lock = Lock()
 _file_pool: dict[Path, JSONFile] = {}
 
 
-def load(path: PathOrSimilar,
-         default_data: JSONSerializable | None = None,
-         default_path: PathOrSimilar | None = None,
-         *,
-         settings: JsonSerializationSettings | None = None,
-         auto_save: bool = True,
-         strict: bool = True,
-         load_file: bool = True,
-         ) -> JSONFile:
+def load(
+    path: PathOrSimilar,
+    default_data: JSONSerializable | None = None,
+    default_path: PathOrSimilar | None = None,
+    *,
+    settings: JsonSerializationSettings | None = None,
+    auto_save: bool = True,
+    strict: bool = True,
+    load_file: bool = True,
+) -> JSONFile:
     """
     Open a new JSONFile and add it to the pool.
     Specify defaults preferably with default_data or default_path.
@@ -60,14 +62,15 @@ def load(path: PathOrSimilar,
     key = path
     with _pool_lock:
         if key not in _file_pool:
-            jsonfile = JSONFile(path,
-                                default_data=default_data,
-                                default_path=default_path,
-                                auto_save=auto_save,
-                                settings=settings,
-                                strict=strict,
-                                load_file=load_file
-                                )
+            jsonfile = JSONFile(
+                path,
+                default_data=default_data,
+                default_path=default_path,
+                auto_save=auto_save,
+                settings=settings,
+                strict=strict,
+                load_file=load_file,
+            )
             _file_pool[key] = jsonfile
         return _file_pool[key]
 

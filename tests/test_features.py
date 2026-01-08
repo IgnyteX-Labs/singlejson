@@ -87,5 +87,5 @@ def test_serialization_settings_indent_and_sort(tmp_path: Path):
     first_brace = text.splitlines()[0].strip()
     assert first_brace == "{"
     # a should come before b when sorted
-    assert "\n  \"a\"" in text
-    assert "\n  \"b\"" in text
+    assert '\n  "a"' in text
+    assert '\n  "b"' in text

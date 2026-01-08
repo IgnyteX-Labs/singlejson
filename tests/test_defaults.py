@@ -8,10 +8,7 @@ def test_default_data_is_deepcopied(tmp_path: Path):
     path = tmp_path / "test.json"
 
     # Original mutable data
-    default_data = {
-        "nested": {"key": "value"},
-        "list": [1, 2, 3]
-    }
+    default_data = {"nested": {"key": "value"}, "list": [1, 2, 3]}
 
     # Initialize JSONFile. Since file doesn't exist, it will use default_data
     jf = JSONFile(path, default_data=default_data)

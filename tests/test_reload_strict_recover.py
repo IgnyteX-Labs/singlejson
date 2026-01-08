@@ -87,7 +87,9 @@ def test_default_path_pointing_to_invalid_json_strict_true_raises_on_init(tmp_pa
         JSONFile(p, default_path=defp, strict=True)
 
 
-def test_default_path_pointing_to_invalid_json_strict_false_reload_handles_recovery(tmp_path):
+def test_default_path_pointing_to_invalid_json_strict_false_reload_handles_recovery(
+    tmp_path,
+):
     p = tmp_path / "target4.json"
     defp = tmp_path / "def_invalid2.json"
     write_text(defp, "{ not valid }")
@@ -104,7 +106,9 @@ def test_default_path_pointing_to_invalid_json_strict_false_reload_handles_recov
         jf2.reload(recover=False)
 
 
-def test_default_data_non_serializable_strict_true_raises_DefaultNotJSONSerializableError(tmp_path):
+def test_default_data_non_serializable_strict_true_raises_DefaultNotJSONSerializableError(
+    tmp_path,
+):
     p = tmp_path / "target5.json"
     non_serializable = {"x": set([1])}
     with pytest.raises(DefaultNotJSONSerializableError):

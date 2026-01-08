@@ -20,6 +20,7 @@ except Exception:  # file not generated yet (e.g., fresh clone)
     try:
         # If the package is installed, ask importlib.metadata
         from importlib.metadata import version as _pkg_version
+
         __version__ = _pkg_version("singlejson")
     except Exception:
         # Last resort for local source trees without SCM metadata

@@ -20,8 +20,8 @@ def test_concurrent_save_and_reload(tmp_path):
     p = tmp_path / "concurrent.json"
     jf = JSONFile(p, default_data={})
 
-    t1 = threading.Thread(target=worker_save, args=(jf, 'a', 1))
-    t2 = threading.Thread(target=worker_save, args=(jf, 'b', 2))
+    t1 = threading.Thread(target=worker_save, args=(jf, "a", 1))
+    t2 = threading.Thread(target=worker_save, args=(jf, "b", 2))
     t3 = threading.Thread(target=worker_reload, args=(jf,))
 
     # start threads
@@ -36,7 +36,7 @@ def test_concurrent_save_and_reload(tmp_path):
 
     # final reload to ensure file is readable
     jf.reload(recover=True)
-    data = json.loads(p.read_text(encoding='utf-8'))
+    data = json.loads(p.read_text(encoding="utf-8"))
     assert isinstance(data, dict)
 
 
