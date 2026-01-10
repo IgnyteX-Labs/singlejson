@@ -9,10 +9,10 @@ The main ``singlejson`` package.
 singlejson exports the :class:`~singlejson.fileutils.JSONFile` class
 as well as many functions from the :mod:`singlejson.pool` module:
 
-* :func:`~singlejson.pool.load`
-* :func:`~singlejson.pool.sync`
-* :func:`~singlejson.pool.reset`
-* :func:`~singlejson.pool.close`
+* :func:`~singlejson.pool.load` to load a shared JSON file instance
+* :func:`~singlejson.pool.sync` to save all loaded files
+* :func:`~singlejson.pool.reset` to clear the pool (with or without saving)
+* :func:`~singlejson.pool.close` to remove a specific file from the pool
 
 To access default serialization settings, use:
 
