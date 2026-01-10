@@ -1,9 +1,6 @@
-"""Load and save JSON files easily across files.
-
-Public API:
-    - Classes: JSONFile, JsonSerializationSettings
-    - Functions: load, sync, reset, close
-    - Defaults: DEFAULT_SERIALIZATION_SETTINGS
+"""
+Load json files fast and easy.
+Use singlejson.load() to load a file.
 """
 
 from .fileutils import (

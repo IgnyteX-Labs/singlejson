@@ -4,15 +4,25 @@ API Reference
 Top-level package
 -----------------
 
-The main interface for ``singlejson``. These members are re-exported from
-internal modules for convenience.
+The main ``singlejson`` package.
 
-.. automodule:: singlejson
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :imported-members:
+singlejson exports the :class:`~singlejson.fileutils.JSONFile` class
+as well as many functions from the :mod:`singlejson.pool` module:
 
+* :func:`~singlejson.pool.load`
+* :func:`~singlejson.pool.sync`
+* :func:`~singlejson.pool.reset`
+* :func:`~singlejson.pool.close`
+
+To access default serialization settings, use:
+
+* :data:`~singlejson.DEFAULT_SERIALIZATION_SETTINGS`
+* :class:`~singlejson.fileutils.JsonSerializationSettings`
+
+.. py:data:: singlejson.DEFAULT_SERIALIZATION_SETTINGS
+    :type: JsonSerializationSettings
+
+    The global default serialization settings instance.
 
 File utilities
 --------------
