@@ -19,6 +19,13 @@ To access default serialization settings, use:
 * :data:`~singlejson.DEFAULT_SERIALIZATION_SETTINGS`
 * :class:`~singlejson.fileutils.JsonSerializationSettings`
 
+exceptions thrown by the package are also exported directly from the top-level package.
+
+* :class:`~singlejson.fileutils.DefaultNotJSONSerializableError`
+* :class:`~singlejson.fileutils.FileAccessError`
+* :class:`~singlejson.fileutils.JSONDeserializationError`
+
+
 .. py:data:: singlejson.DEFAULT_SERIALIZATION_SETTINGS
     :type: JsonSerializationSettings
 

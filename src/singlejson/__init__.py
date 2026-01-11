@@ -5,6 +5,9 @@ Use singlejson.load() to load a file.
 
 from .fileutils import (
     DEFAULT_SERIALIZATION_SETTINGS,
+    DefaultNotJSONSerializableError,
+    FileAccessError,
+    JSONDeserializationError,
     JSONFile,
     JsonSerializationSettings,
 )
@@ -31,5 +34,8 @@ __all__ = [
     "reset",
     "close",
     "JsonSerializationSettings",
+    "FileAccessError",
+    "DefaultNotJSONSerializableError",
+    "JSONDeserializationError",
     "__version__",
 ]
