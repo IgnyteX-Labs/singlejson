@@ -1,4 +1,5 @@
 """Utils for handling IO and JSON operations."""
+
 from __future__ import annotations
 
 import json
@@ -17,13 +18,13 @@ from types import TracebackType
 from typing import Any, TypeAlias
 
 JSONSerializable: TypeAlias = (
-        dict[str, "JSONSerializable"]
-        | list["JSONSerializable"]
-        | str
-        | int
-        | float
-        | bool
-        | None
+    dict[str, "JSONSerializable"]
+    | list["JSONSerializable"]
+    | str
+    | int
+    | float
+    | bool
+    | None
 )
 
 PathOrSimilar = str | os.PathLike[str]
@@ -60,11 +61,8 @@ def _atomic_write_text(path: Path, text: str, encoding: str = "utf-8") -> None:
             path.parent.mkdir(parents=True, exist_ok=True)
             # write to a temp file in same directory then replace
             with NamedTemporaryFile(
-                    "w",
-                    encoding=encoding,
-                    dir=path.parent,
-                    delete=False,
-                    suffix=".tmp") as tf:
+                "w", encoding=encoding, dir=path.parent, delete=False, suffix=".tmp"
+            ) as tf:
                 tf.write(text)
                 temp_name = tf.name
             os.replace(temp_name, path)
@@ -127,15 +125,15 @@ class JSONFile:
     __auto_save: bool
 
     def __init__(
-            self,
-            path: PathOrSimilar,
-            default_data: JSONSerializable = None,
-            default_path: PathOrSimilar | None = None,
-            *,
-            settings: JsonSerializationSettings | None = None,
-            auto_save: bool = True,
-            strict: bool = True,
-            load_file: bool = True
+        self,
+        path: PathOrSimilar,
+        default_data: JSONSerializable = None,
+        default_path: PathOrSimilar | None = None,
+        *,
+        settings: JsonSerializationSettings | None = None,
+        auto_save: bool = True,
+        strict: bool = True,
+        load_file: bool = True,
     ) -> None:
         """
         Create a new JSONFile instance and load data from disk
@@ -182,14 +180,16 @@ class JSONFile:
                             # If this works without errors, fine!
                     except (PermissionError, OSError) as e:
                         raise FileAccessError(
-                            f"Cannot access default JSON file '{path}': {e}") from e
+                            f"Cannot access default JSON file '{path}': {e}"
+                        ) from e
                     except Exception as e:
                         raise DefaultNotJSONSerializableError(
                             f"Cannot load default JSON from file '{path}': {e}"
                         ) from e
                 else:
                     raise DefaultNotJSONSerializableError(
-                        f"Default JSON file '{path}' does not exist.")
+                        f"Default JSON file '{path}' does not exist."
+                    )
             # Whether checked or not, use default_path default initialization method.
             self.__default_path = default_path
 
@@ -197,10 +197,12 @@ class JSONFile:
             # Default data and no default_path
             if strict:
                 try:
-                    dumps(default_data,
-                          indent=self.settings.indent,
-                          sort_keys=self.settings.sort_keys,
-                          ensure_ascii=self.settings.ensure_ascii)
+                    dumps(
+                        default_data,
+                        indent=self.settings.indent,
+                        sort_keys=self.settings.sort_keys,
+                        ensure_ascii=self.settings.ensure_ascii,
+                    )
                     # If this works without errors, fine!
                 except (TypeError, ValueError, json.JSONDecodeError) as e:
                     raise DefaultNotJSONSerializableError(
@@ -235,28 +237,32 @@ class JSONFile:
                         raise DefaultNotJSONSerializableError(
                             f"Default JSON file '{default_path}' does not exist!"
                         )
-                    _atomic_write_text(self.__path,
-                                       "{}",
-                                       encoding=self.settings.encoding)
+                    _atomic_write_text(
+                        self.__path, "{}", encoding=self.settings.encoding
+                    )
             else:
                 # Default is dict, write it to file and then open it.
                 # No need to deepcopy again as default is
                 # saved to file and then re-constructed
                 try:
-                    text = dumps(self.__default_data,
-                                 indent=self.settings.indent,
-                                 sort_keys=self.settings.sort_keys,
-                                 ensure_ascii=self.settings.ensure_ascii)
-                    _atomic_write_text(self.__path, text,
-                                       encoding=self.settings.encoding)
+                    text = dumps(
+                        self.__default_data,
+                        indent=self.settings.indent,
+                        sort_keys=self.settings.sort_keys,
+                        ensure_ascii=self.settings.ensure_ascii,
+                    )
+                    _atomic_write_text(
+                        self.__path, text, encoding=self.settings.encoding
+                    )
                 except (TypeError, ValueError, json.JSONDecodeError) as e:
                     if not recover:
                         raise DefaultNotJSONSerializableError(
                             f"Default for file '{self.__path}' is not serializable!"
                             f"\nError: {e}"
                         ) from e
-                    _atomic_write_text(self.__path, "{}",
-                                       encoding=self.settings.encoding)
+                    _atomic_write_text(
+                        self.__path, "{}", encoding=self.settings.encoding
+                    )
                 # Continue to load file as normal
 
     @property
@@ -294,9 +300,7 @@ class JSONFile:
                 with self.__path.open("r", encoding=self.settings.encoding) as file:
                     self.json = json_load(file)
             except (PermissionError, OSError) as e:
-                raise FileAccessError(
-                    f"Cannot read file '{self.__path}': {e}"
-                ) from e
+                raise FileAccessError(f"Cannot read file '{self.__path}': {e}") from e
             except json.JSONDecodeError as e:
                 # Loading failed. Recover to default if allowed.
                 if not recover:
@@ -313,7 +317,9 @@ class JSONFile:
                 logger.warning(
                     "Cannot read json from file '%s'. Using default!\n"
                     "Decoding error: %s",
-                    self.__path, e)
+                    self.__path,
+                    e,
+                )
                 self.__reinstantiate_default(recover)
                 # Try loading again (single safe retry to avoid infinite recursion)
                 try:
@@ -324,9 +330,12 @@ class JSONFile:
                     logger.warning(
                         "Recovery also failed for '%s'. Falling back to empty object."
                         "Decoding error: %s",
-                        self.__path, e2)
-                    _atomic_write_text(self.__path, "{}",
-                                       encoding=self.settings.encoding)
+                        self.__path,
+                        e2,
+                    )
+                    _atomic_write_text(
+                        self.__path, "{}", encoding=self.settings.encoding
+                    )
                     self.json = {}
 
     def save(self, settings: JsonSerializationSettings | None = None) -> None:
@@ -345,10 +354,12 @@ class JSONFile:
                 self.__path.parent.mkdir(parents=True, exist_ok=True)
                 # Serialize to text then atomically write
                 data_to_save = self.json
-                text = dumps(data_to_save,
-                             indent=settings.indent,
-                             sort_keys=settings.sort_keys,
-                             ensure_ascii=settings.ensure_ascii)
+                text = dumps(
+                    data_to_save,
+                    indent=settings.indent,
+                    sort_keys=settings.sort_keys,
+                    ensure_ascii=settings.ensure_ascii,
+                )
                 _atomic_write_text(self.__path, text, encoding=self.settings.encoding)
             except (PermissionError, OSError) as e:
                 raise FileAccessError(f"Cannot write file '{self.__path}': {e}") from e
@@ -361,7 +372,8 @@ class JSONFile:
             "JSONFile.save_atomic is deprecated; use JSONFile.save() "
             "which is atomic by default",
             DeprecationWarning,
-            stacklevel=2)
+            stacklevel=2,
+        )
         # delegate to new save implementation
         return self.save()
 
@@ -374,11 +386,12 @@ class JSONFile:
         """
         return self
 
-    def __exit__(self,
-                 exc_type: type[BaseException] | None,
-                 exc: BaseException | None,
-                 tb: TracebackType | None,
-                 ) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        tb: TracebackType | None,
+    ) -> None:
         """
         Exit the context manager and save if auto_save is True
         and no exception occurred.

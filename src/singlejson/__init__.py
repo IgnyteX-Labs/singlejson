@@ -1,13 +1,13 @@
-"""Load and save JSON files easily across files.
-
-Public API:
-    - Classes: JSONFile, JsonSerializationSettings
-    - Functions: load, sync, reset, close
-    - Defaults: DEFAULT_SERIALIZATION_SETTINGS
+"""
+Load json files fast and easy.
+Use singlejson.load() to load a file.
 """
 
 from .fileutils import (
     DEFAULT_SERIALIZATION_SETTINGS,
+    DefaultNotJSONSerializableError,
+    FileAccessError,
+    JSONDeserializationError,
     JSONFile,
     JsonSerializationSettings,
 )
@@ -20,6 +20,7 @@ except Exception:  # file not generated yet (e.g., fresh clone)
     try:
         # If the package is installed, ask importlib.metadata
         from importlib.metadata import version as _pkg_version
+
         __version__ = _pkg_version("singlejson")
     except Exception:
         # Last resort for local source trees without SCM metadata
@@ -33,5 +34,8 @@ __all__ = [
     "reset",
     "close",
     "JsonSerializationSettings",
+    "FileAccessError",
+    "DefaultNotJSONSerializableError",
+    "JSONDeserializationError",
     "__version__",
 ]

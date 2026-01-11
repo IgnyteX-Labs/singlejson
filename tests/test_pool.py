@@ -4,13 +4,20 @@ from singlejson.pool import load, sync
 
 def test_pool(tmp_path):
     path = tmp_path.joinpath("test.json").__str__()
-    jsonfile = load(path, default_data={"test": "successful", "other_types": [True, 1, {}]})
+    jsonfile = load(
+        path, default_data={"test": "successful", "other_types": [True, 1, {}]}
+    )
     assert jsonfile.json["test"] == "successful", "should be successful"
     jsonfile.json["test"] = "unsuccessful"
-    assert load(path).json["test"] == "unsuccessful", \
+    assert load(path).json["test"] == "unsuccessful", (
         "should be unsuccessful since it should access the local copy."
-    assert JSONFile(path, default_data={"test": "unsuccessful"}).json["test"] == "successful", \
-        "should be successful since changes to pool should not have been saved."
+    )
+    assert (
+        JSONFile(path, default_data={"test": "unsuccessful"}).json["test"]
+        == "successful"
+    ), "should be successful since changes to pool should not have been saved."
     sync()
-    assert JSONFile(path, default_data={"test": "successful"}).json["test"] == "unsuccessful", \
-        "should be unsuccessful since changes to pool should have been saved."
+    assert (
+        JSONFile(path, default_data={"test": "successful"}).json["test"]
+        == "unsuccessful"
+    ), "should be unsuccessful since changes to pool should have been saved."

@@ -87,4 +87,3 @@ def test_copy_default_file_race(tmp_path: Path):
 
     p.join()
     assert p.exitcode == 0
-
