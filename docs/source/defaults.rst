@@ -48,6 +48,13 @@ Every load call always refers to this file.
 
 ``default_path`` takes precedence over ``default_data`` if both are provided.
 
+.. tip::
+    If your application ships with default configuration files in
+    ``importlib.resources.files``, use ``(files("your_package") / "path/to/default.json").read_text()``
+    to read the default file contents and pass it to ``default_data``.
+    ``importlib.resources.files`` returns ``Traversable`` objects which are not directly compatible with
+    ``default_path``.
+
 Strict mode
 """"""""""""""""""
 You can also pass the option ``strict`` which checks defaults before

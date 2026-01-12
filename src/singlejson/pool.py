@@ -44,7 +44,8 @@ def load(
     :param strict:
         if True, will throw error if file cannot be read
         if default_data or json in default_path is not JSON-serializable
-        if False, will recover gracefully
+        if False, will recover gracefully.
+        Read :ref:`error_handling` fore more info
     :param load_file:
         True by default, causes file to be loaded on init.
         Set to False to suppress loading.
