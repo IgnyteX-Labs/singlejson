@@ -203,10 +203,9 @@ class JSONFile:
             if not isinstance(default_data, (str, list, dict)) and strict:
                 # Only throw error if strict
                 raise DefaultNotJSONSerializableError(
-                    f"""Default data for '{self.__path}' is not
-                     JSON-serializable!\n It must be a dict, list or string! 
-                     Got type: {type(default_data)}
-                """
+                    f"Default data for '{self.__path}' is not JSON-serializable! \n"
+                    "It must be a dict, list or string! \n"
+                    f"Got type: {type(self.__default_data)}"
                 )
             elif isinstance(default_data, str) and strict:
                 try:
@@ -299,9 +298,9 @@ class JSONFile:
             else:
                 if not isinstance(self.__default_data, (str, list, dict)) and strict:
                     raise DefaultNotJSONSerializableError(
-                        f"""Default data for '{self.__path}' is not
-                         JSON-serializable!\n It must be a dict, list or string! 
-                         Got type: {type(self.__default_data)}"""
+                        f"Default data for '{self.__path}' is not JSON-serializable! \n"
+                        "It must be a dict, list or string! \n"
+                        f"Got type: {type(self.__default_data)}"
                     )
                 elif isinstance(self.__default_data, str) and strict:
                     # Validate str defaults ('{"a":1}' etc)

@@ -21,7 +21,7 @@ Sometimes it is important to ensure that the default data provided is valid.
 
 You can do that by setting ``strict=True`` when creating a :class:`~singlejson.fileutils.JSONFile` instance
 or when using :func:`~singlejson.pool.load()`.
-If you want to supress errors that might occur when loading the real file, set
+If you want to suppress errors that might occur when loading the real file, set
 ``load_file=False`` when creating or :func:`~singlejson.pool.load()` the :class:`~singlejson.fileutils.JSONFile` instance.
 
 This way only the default data is validated and you can call

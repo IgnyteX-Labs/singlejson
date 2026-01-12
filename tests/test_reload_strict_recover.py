@@ -82,9 +82,9 @@ def test_default_path_missing_strict_false_reload_behaviour(tmp_path):
     with pytest.raises(DefaultNotJSONSerializableError):
         jf2.reload(strict=True)
 
-        # And strict=False should recover to {}
-        jf.reload(strict=False)
-        assert jf.json == {}
+    # And strict=False should recover to {}
+    jf.reload(strict=False)
+    assert jf.json == {}
 
 
 def test_default_path_pointing_to_invalid_json_strict_true_raises_on_init(tmp_path):
