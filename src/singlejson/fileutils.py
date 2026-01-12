@@ -24,10 +24,11 @@ JSONFields: TypeAlias = (
 A type alias for valid JSON fields (inside a json).
 """
 
-JSONSerializable: TypeAlias = dict[str, "JSONFields"] | list["JSONFields"] | str
+SensibleTopLevelJSON: TypeAlias = dict[str, "JSONFields"] | list["JSONFields"] | str
 """
-A type alias for valid JSON files.
+A type alias for valid top level JSON objects (only for use in default_data)
 """
+# Note: floats, ints etc. are also valid top level JSON but not supported.
 
 PathOrSimilar = str | os.PathLike[str]
 
@@ -118,7 +119,7 @@ class JSONFile:
     __path: Path  # Full absolute path
     json: Any
     """Python representation of the JSON data."""
-    __default_data: JSONSerializable | None = None
+    __default_data: SensibleTopLevelJSON | None = None
     #: If not None, default data to use when the file at path is missing or corrupted
     __default_path: PathOrSimilar | None = None
     #: If not None, path to JSON file to use as default data
@@ -129,7 +130,7 @@ class JSONFile:
     def __init__(
         self,
         path: PathOrSimilar,
-        default_data: JSONSerializable | None = None,
+        default_data: SensibleTopLevelJSON | None = None,
         default_path: PathOrSimilar | None = None,
         *,
         settings: JsonSerializationSettings | None = None,
@@ -155,7 +156,7 @@ class JSONFile:
             if True, will throw error if file cannot be read or
             if default_data or json in default_path is not JSON-serializable
             if False, will recover gracefully.
-            Read :ref:`error_handling` fore more info
+            Read :ref:`error_handling` for more info
         :param load_file:
             True by default, causes file to be loaded on init.
             Set to False to suppress loading.
@@ -209,7 +210,8 @@ class JSONFile:
                 )
             elif isinstance(default_data, str) and strict:
                 try:
-                    self.__default_data = json_loads(default_data)
+                    json_loads(default_data)
+                    self.__default_data = deepcopy(default_data)
                 except (TypeError, ValueError, json.JSONDecodeError) as e:
                     raise DefaultNotJSONSerializableError(
                         f"default_data for '{self.__path}' isn't JSON-serializable!"
@@ -252,7 +254,7 @@ class JSONFile:
             if True, will throw error if file cannot be read or
             if default_data or json in default_path is not JSON-serializable
             if False, will recover gracefully.
-            Read :ref:`error_handling` fore more info
+            Read :ref:`error_handling` for more info
         :raises ~singlejson.fileutils.DefaultNotJSONSerializableError:
             if default data is not JSON-serializable and ``strict`` is true
         :raises ~singlejson.fileutils.FileAccessError:
@@ -304,7 +306,7 @@ class JSONFile:
                 elif isinstance(self.__default_data, str) and strict:
                     # Validate str defaults ('{"a":1}' etc)
                     try:
-                        self.__default_data = json_loads(self.__default_data)
+                        json_loads(self.__default_data)
                     except (TypeError, ValueError, json.JSONDecodeError) as e:
                         raise DefaultNotJSONSerializableError(
                             f"default_data for '{self.__path}' isn't JSON-serializable!"
@@ -366,7 +368,7 @@ class JSONFile:
         """
         return self.__path
 
-    def reload(self, strict: bool = True) -> None:
+    def reload(self, strict: bool = False) -> None:
         """
         Reload from disk, recovering to default on invalid JSON.
         Always raises FileAccessError on permission issues.
@@ -375,7 +377,7 @@ class JSONFile:
             if True, will throw error if file cannot be read or
             if default_data or json in default_path is not JSON-serializable
             if False, will recover gracefully.
-            Read :ref:`error_handling` fore more info
+            Read :ref:`error_handling` for more info
         :type strict: bool
 
         :raises ~singlejson.fileutils.FileAccessError:
@@ -408,7 +410,7 @@ class JSONFile:
                     e,
                 )
                 self.restore_default(strict)
-                # Dont try loading again as it is handled in restore_default
+                # Don't retry loading here; restore_default() now handles recovery
 
     def save(self, settings: JsonSerializationSettings | None = None) -> None:
         """

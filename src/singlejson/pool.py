@@ -7,7 +7,7 @@ from threading import Lock
 
 from .fileutils import (
     JSONFile,
-    JSONSerializable,
+    SensibleTopLevelJSON,
     JsonSerializationSettings,
     PathOrSimilar,
     abs_filename,
@@ -19,7 +19,7 @@ _file_pool: dict[Path, JSONFile] = {}
 
 def load(
     path: PathOrSimilar,
-    default_data: JSONSerializable | None = None,
+    default_data: SensibleTopLevelJSON | None = None,
     default_path: PathOrSimilar | None = None,
     *,
     settings: JsonSerializationSettings | None = None,

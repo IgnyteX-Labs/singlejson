@@ -5,7 +5,8 @@ Error handling
 
 Graceful recovery from errors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-By default, ``singlejson`` runs with ``strict=False`` set.
+``singlejson`` defaults to ``strict=False``
+when calling :func:`~singlejson.pool.load()` or instantiating a new :class:`~singlejson.fileutils.JSONFile`.
 
 This means that if a JSON file does not exist or contains invalid JSON,
 it will be replaced with the provided default data. A warning will be logged
@@ -20,7 +21,7 @@ Sometimes it is important to ensure that the default data provided is valid.
 
 You can do that by setting ``strict=True`` when creating a :class:`~singlejson.fileutils.JSONFile` instance
 or when using :func:`~singlejson.pool.load()`.
-If you want to surpress errors that might occur when loading the real file, set
+If you want to supress errors that might occur when loading the real file, set
 ``load_file=False`` when creating or :func:`~singlejson.pool.load()` the :class:`~singlejson.fileutils.JSONFile` instance.
 
 This way only the default data is validated and you can call
@@ -46,7 +47,7 @@ This exception is **always** raised when the file cannot be accessed
 due to permission issues or other I/O errors. singlejson cannot recover from this,
 so you will need to handle this exception regardless of the ``strict`` setting.
 
-**singlejson will always create files that do not exist witout
+**singlejson will always create files that do not exist without
 error regardless of the ``strict`` setting**
 
 
