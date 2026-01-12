@@ -249,8 +249,10 @@ class JSONFile:
         or by writing the default data to the file.
 
         :param strict:
-            If True, recover when an error occurs during default loading.
-            Otherwise will throw DefaultNotJSONSerializableError.
+            if True, will throw error if file cannot be read or
+            if default_data or json in default_path is not JSON-serializable
+            if False, will recover gracefully.
+            Read :ref:`error_handling` fore more info
         :raises ~singlejson.fileutils.DefaultNotJSONSerializableError:
             if default data is not JSON-serializable and ``strict`` is true
         :raises ~singlejson.fileutils.FileAccessError:
@@ -370,8 +372,10 @@ class JSONFile:
         Always raises FileAccessError on permission issues.
 
         :param strict:
-            If True, raise errors when loading fails.
-            If False default will be used and {} if default loading fails.
+            if True, will throw error if file cannot be read or
+            if default_data or json in default_path is not JSON-serializable
+            if False, will recover gracefully.
+            Read :ref:`error_handling` fore more info
         :type strict: bool
 
         :raises ~singlejson.fileutils.FileAccessError:
