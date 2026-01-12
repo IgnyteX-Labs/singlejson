@@ -69,14 +69,16 @@ def test_error_on_non_jsonserializable_input(tmp_path: Path):
         JSONFile(str(f), default_data=1.07, strict=True)
 
     jf = JSONFile(str(f), default_data=1.08, strict=False)
-    # Should store wrong default without error
+    # Initializing with strict=False should accept and store
+    # the non-JSON-serializable default without raising
     with pytest.raises(DefaultNotJSONSerializableError):
         jf.restore_default(strict=True)
 
+    assert jf.json == {"a": 1}
     # Should work without error
     jf.restore_default(strict=False)
     assert jf.json == 1.08
 
-    f = tmp_path / "test.json"
+    f = tmp_path / "test2.json"
     f.write_text("1.08", encoding="utf-8")
     assert JSONFile(str(f), default_data=1.08).json == 1.08

@@ -28,6 +28,10 @@ This way only the default data is validated and you can call
 :func:`~singlejson.fileutils.JSONFile.reload()` later with ``strict=False``
 to load the actual file.
 
+.. note::
+    When ``strict`` is set to ``True``, only ``dicts``, ``lists`` and valid ``str`` (as json)
+    work. ``float``, ``int`` are considered non-valid JSON.
+
 Strict mode for error handling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 If you want fine control over error handling, you can set ``strict=True``.

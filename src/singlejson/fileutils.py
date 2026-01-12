@@ -28,7 +28,7 @@ SensibleTopLevelJSON: TypeAlias = dict[str, "JSONFields"] | list["JSONFields"] |
 """
 A type alias for valid top level JSON objects (only for use in default_data)
 """
-# Note: floats, ints etc. are also valid top level JSON but not supported.
+# Note: floats, ints etc. are also valid top level JSON but unsupported with strict=True
 
 PathOrSimilar = str | os.PathLike[str]
 

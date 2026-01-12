@@ -7,6 +7,10 @@ contains invalid JSON.
 This can be done in multiple ways:
 Pass these options to :class:`singlejson.JSONFile` or :func:`singlejson.load`.
 
+.. note::
+    For information on default verification, see :ref:`error_handling`
+    and specifically the ``strict`` parameter.
+
 ``default_data``
 """"""""""""""""""
 Pass a ``dict`` which will be copied and then used as is.

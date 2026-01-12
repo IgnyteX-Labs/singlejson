@@ -116,7 +116,7 @@ def test_strict_init(tmp_path: Path):
 
     malformed.write_text('{"key": "value",}', encoding="utf-8")  # Malformed JSON
     assert JSONFile(malformed, default_path=malformed, strict=False).json == {}
-    # Since the file is malformed and strict mode is on, it should revert to default
+    # Since the file is malformed and strict mode is off, it should revert to default
 
 
 def test_restore_default_strict_mode(tmp_path: Path):
@@ -151,4 +151,3 @@ def test_restore_default_strict_mode(tmp_path: Path):
     jf_with_path.restore_default(strict=False)
     # Should not throw an error and revert to {} since cannot set json to malformed
     assert jf_with_path.json == {}
-    # Since the file is malformed and strict mode is on, it should revert to default
