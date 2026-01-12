@@ -7,25 +7,27 @@ import logging
 import os
 import shutil
 import threading
-import warnings
 from copy import deepcopy
 from dataclasses import dataclass
 from json import dumps
 from json import load as json_load
+from json import loads as json_loads
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from types import TracebackType
 from typing import Any, TypeAlias
 
-JSONSerializable: TypeAlias = (
-    dict[str, "JSONSerializable"]
-    | list["JSONSerializable"]
-    | str
-    | int
-    | float
-    | bool
-    | None
+JSONFields: TypeAlias = (
+    dict[str, "JSONFields"] | list["JSONFields"] | str | int | float | bool | None
 )
+"""
+A type alias for valid JSON fields (inside a json).
+"""
+
+JSONSerializable: TypeAlias = dict[str, "JSONFields"] | list["JSONFields"] | str
+"""
+A type alias for valid JSON files.
+"""
 
 PathOrSimilar = str | os.PathLike[str]
 
@@ -127,12 +129,12 @@ class JSONFile:
     def __init__(
         self,
         path: PathOrSimilar,
-        default_data: JSONSerializable = None,
+        default_data: JSONSerializable | None = None,
         default_path: PathOrSimilar | None = None,
         *,
         settings: JsonSerializationSettings | None = None,
         auto_save: bool = True,
-        strict: bool = True,
+        strict: bool = False,
         load_file: bool = True,
     ) -> None:
         """
@@ -151,16 +153,16 @@ class JSONFile:
         :param auto_save: if True, context manager will save on exit
         :param strict:
             if True, will throw error if file cannot be read or
-            if default_data is not JSON-serializable
+            if default_data or json in default_path is not JSON-serializable
         :param load_file:
             True by default, causes file to be loaded on init.
             Set to False to suppress loading.
         :raises ~singlejson.fileutils.FileAccessError:
             if file cannot be accessed (always)
         :raises ~singlejson.fileutils.JSONDeserializationError:
-            if strict is True and an error occurs during loading
+            if ``strict`` is True and an error occurs during loading
         :raises ~singlejson.fileutils.DefaultNotJSONSerializableError:
-            if strict is True and default_data is not JSON-serializable
+            if ``strict`` is True and default_data is not JSON-serializable
         """
         self.__path = abs_filename(path)
         self.settings = settings or DEFAULT_SERIALIZATION_SETTINGS
@@ -193,9 +195,26 @@ class JSONFile:
             # Whether checked or not, use default_path default initialization method.
             self.__default_path = default_path
 
-        else:
+        elif default_data is not None:
             # Default data and no default_path
-            if strict:
+            if not isinstance(default_data, (str, list, dict)) and strict:
+                # Only throw error if strict
+                raise DefaultNotJSONSerializableError(
+                    f"""Default data for '{self.__path}' is not
+                     JSON-serializable!\n It must be a dict, list or string! 
+                     Got type: {type(default_data)}
+                """
+                )
+            elif isinstance(default_data, str) and strict:
+                try:
+                    self.__default_data = json_loads(default_data)
+                except (TypeError, ValueError, json.JSONDecodeError) as e:
+                    raise DefaultNotJSONSerializableError(
+                        f"default_data for '{self.__path}' isn't JSON-serializable!"
+                    ) from e
+            elif strict:
+                # default data is list or dict so should be valid unless
+                # it contains non-serializable types inside
                 try:
                     dumps(
                         default_data,
@@ -204,46 +223,92 @@ class JSONFile:
                         ensure_ascii=self.settings.ensure_ascii,
                     )
                     # If this works without errors, fine!
+                    self.__default_data = deepcopy(default_data)
                 except (TypeError, ValueError, json.JSONDecodeError) as e:
                     raise DefaultNotJSONSerializableError(
-                        f"default_data for '{self.__path}' isn't JSON-serializable: {e}"
+                        f"default_data for '{self.__path}' is not "
+                        f"JSON-serializable: {e}"
                     ) from e
-            # No matter the validity, set default data.
-            self.__default_data = deepcopy(default_data)
-
+            else:
+                # No matter the validity, set default data.
+                self.__default_data = deepcopy(default_data)
+        else:
+            # No default specified, use empty dict
+            self.__default_data = {}
         # Load from disk (this will create the file if needed and apply defaults)
         if load_file:
-            self.reload(recover=strict)
+            self.reload(strict=strict)
         else:
             self.json = None
 
-    def __reinstantiate_default(self, recover: bool) -> None:
+    def restore_default(self, strict: bool) -> None:
         """
-        Revert the file to the default.
+        Revert the file to the default either by copying the default to the file path
+        or by writing the default data to the file.
 
-        :param recover:
+        :param strict:
             If True, recover when an error occurs during default loading.
             Otherwise will throw DefaultNotJSONSerializableError.
+        :raises ~singlejson.fileutils.DefaultNotJSONSerializableError:
+            if default data is not JSON-serializable and ``strict`` is true
+        :raises ~singlejson.fileutils.FileAccessError:
+            if file cannot be accessed (always)
         """
         with self._lock:
             if self.__default_path:
                 default_path = Path(self.__default_path)
                 if default_path.exists():
                     # Valid default file, copy
+                    if strict:
+                        # Validate JSON is valid
+                        try:
+                            with default_path.open(
+                                "r", encoding=self.settings.encoding
+                            ) as file:
+                                json_load(file)
+                                # If this works without errors, fine!
+                        except (PermissionError, OSError) as e:
+                            raise FileAccessError(
+                                f"Cannot access default JSON file '{default_path}': {e}"
+                            ) from e
+                        except Exception as e:
+                            raise DefaultNotJSONSerializableError(
+                                f"Cannot load default JSON from file "
+                                f"'{default_path}': {e}"
+                            ) from e
                     _atomic_copy_file(default_path, self.__path)
                 else:
                     # Default file does not exist, create empty file
-                    if not recover:
+                    if strict:
                         raise DefaultNotJSONSerializableError(
                             f"Default JSON file '{default_path}' does not exist!"
                         )
+                    logger.warning(
+                        "Default JSON file '%s' does not exist!\nWriting empty {}!",
+                        default_path,
+                    )
                     _atomic_write_text(
                         self.__path, "{}", encoding=self.settings.encoding
                     )
             else:
-                # Default is dict, write it to file and then open it.
-                # No need to deepcopy again as default is
-                # saved to file and then re-constructed
+                if not isinstance(self.__default_data, (str, list, dict)) and strict:
+                    raise DefaultNotJSONSerializableError(
+                        f"""Default data for '{self.__path}' is not
+                         JSON-serializable!\n It must be a dict, list or string! 
+                         Got type: {type(self.__default_data)}"""
+                    )
+                elif isinstance(self.__default_data, str) and strict:
+                    # Validate str defaults ('{"a":1}' etc)
+                    try:
+                        self.__default_data = json_loads(self.__default_data)
+                    except (TypeError, ValueError, json.JSONDecodeError) as e:
+                        raise DefaultNotJSONSerializableError(
+                            f"default_data for '{self.__path}' isn't JSON-serializable!"
+                        ) from e
+
+                # Data is now dict or list (as load only returns those two types
+                # without errors) or we are not strict in which case we do whatever
+                # we want and try to recover.
                 try:
                     text = dumps(
                         self.__default_data,
@@ -255,15 +320,38 @@ class JSONFile:
                         self.__path, text, encoding=self.settings.encoding
                     )
                 except (TypeError, ValueError, json.JSONDecodeError) as e:
-                    if not recover:
+                    if strict:
                         raise DefaultNotJSONSerializableError(
                             f"Default for file '{self.__path}' is not serializable!"
                             f"\nError: {e}"
                         ) from e
+                    logger.warning(
+                        "Default data for json file '%s' is not serializable!\n"
+                        "Got error: %s\n"
+                        "Writing empty {}!",
+                        self.__path,
+                        e,
+                    )
                     _atomic_write_text(
                         self.__path, "{}", encoding=self.settings.encoding
                     )
-                # Continue to load file as normal
+
+            # Now try loading the default we just wrote
+            try:
+                with self.__path.open("r", encoding=self.settings.encoding) as file:
+                    self.json = json_load(file)
+            except json.JSONDecodeError as e2:
+                # No need to check for strict here, we are already recovering
+                # because if strict = True JSONDeserializationError
+                # would have been raised.
+                logger.warning(
+                    "Recovery also failed for '%s'. Falling back to empty object."
+                    "Decoding error: %s",
+                    self.__path,
+                    e2,
+                )
+                _atomic_write_text(self.__path, "{}", encoding=self.settings.encoding)
+                self.json = {}
 
     @property
     def path(self) -> Path:
@@ -274,15 +362,15 @@ class JSONFile:
         """
         return self.__path
 
-    def reload(self, *, recover: bool = True) -> None:
+    def reload(self, strict: bool = True) -> None:
         """
         Reload from disk, recovering to default on invalid JSON.
         Always raises FileAccessError on permission issues.
 
-        :param recover:
-            If True, recover when an error occurs during default loading.
-            If False {} will be used if default loading fails.
-        :type recover: bool
+        :param strict:
+            If True, raise errors when loading fails.
+            If False default will be used and {} if default loading fails.
+        :type strict: bool
 
         :raises ~singlejson.fileutils.FileAccessError:
             if file cannot be accessed (always)
@@ -294,7 +382,7 @@ class JSONFile:
             # 1: See if file exists
             if not self.__path.exists():
                 # Create file with no data
-                self.__reinstantiate_default(recover)
+                self.restore_default(strict)
             # 2: File now surely exists
             try:
                 with self.__path.open("r", encoding=self.settings.encoding) as file:
@@ -303,14 +391,7 @@ class JSONFile:
                 raise FileAccessError(f"Cannot read file '{self.__path}': {e}") from e
             except json.JSONDecodeError as e:
                 # Loading failed. Recover to default if allowed.
-                if not recover:
-                    # If a default_path is configured,
-                    # the error likely came from copying an invalid default file.
-                    if self.__default_path:
-                        raise DefaultNotJSONSerializableError(
-                            f"Default JSON file '{self.__default_path}' "
-                            f"is not valid JSON: {e}"
-                        ) from e
+                if strict:
                     raise JSONDeserializationError(
                         f"Cannot read json from file '{self.__path}': {e}"
                     ) from e
@@ -320,23 +401,8 @@ class JSONFile:
                     self.__path,
                     e,
                 )
-                self.__reinstantiate_default(recover)
-                # Try loading again (single safe retry to avoid infinite recursion)
-                try:
-                    with self.__path.open("r", encoding=self.settings.encoding) as file:
-                        self.json = json_load(file)
-                except json.JSONDecodeError as e2:
-                    # No need to check for recover=False here, we are already recovering
-                    logger.warning(
-                        "Recovery also failed for '%s'. Falling back to empty object."
-                        "Decoding error: %s",
-                        self.__path,
-                        e2,
-                    )
-                    _atomic_write_text(
-                        self.__path, "{}", encoding=self.settings.encoding
-                    )
-                    self.json = {}
+                self.restore_default(strict)
+                # Dont try loading again as it is handled in restore_default
 
     def save(self, settings: JsonSerializationSettings | None = None) -> None:
         """
@@ -363,19 +429,6 @@ class JSONFile:
                 _atomic_write_text(self.__path, text, encoding=self.settings.encoding)
             except (PermissionError, OSError) as e:
                 raise FileAccessError(f"Cannot write file '{self.__path}': {e}") from e
-
-    def save_atomic(self, tmp_suffix: str = ".tmp") -> None:
-        """
-        Deprecated alias for `save()` — saves atomically by default.
-        """
-        warnings.warn(
-            "JSONFile.save_atomic is deprecated; use JSONFile.save() "
-            "which is atomic by default",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        # delegate to new save implementation
-        return self.save()
 
     # Context manager support
     def __enter__(self) -> JSONFile:

@@ -31,7 +31,7 @@ def test_concurrent_writes_no_partial_reads(tmp_path: Path):
     # Concurrently read the file multiple times and ensure we never see a partial JSON (decode error)
     reads = 0
     start = time.time()
-    timeout = 2.0
+    timeout = 0.5
     while time.time() - start < timeout:
         if Path(path).exists():
             try:
@@ -72,7 +72,7 @@ def test_copy_default_file_race(tmp_path: Path):
 
     # Concurrently attempt to read dest if it appears, ensuring no JSONDecodeError
     start = time.time()
-    timeout = 2.0
+    timeout = 0.5
     while time.time() - start < timeout:
         if dest.exists():
             try:

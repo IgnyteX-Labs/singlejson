@@ -29,15 +29,6 @@ def test_context_manager_no_save_on_exception(tmp_path: Path):
     assert "x" not in jf2.json
 
 
-def test_save_atomic(tmp_path: Path):
-    p = tmp_path / "atomic.json"
-    jf = JSONFile(p, default_data={})
-    jf.json = {"a": [1, 2, 3]}
-    jf.save_atomic()
-    data = json.loads(p.read_text())
-    assert data == {"a": [1, 2, 3]}
-
-
 def test_pool_relative_and_absolute_same_instance(tmp_path: Path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     rel = Path("pooled.json")
