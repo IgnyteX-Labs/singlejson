@@ -7,9 +7,9 @@ from threading import Lock
 
 from .fileutils import (
     JSONFile,
-    JSONSerializable,
     JsonSerializationSettings,
     PathOrSimilar,
+    SensibleTopLevelJSON,
     abs_filename,
 )
 
@@ -19,12 +19,12 @@ _file_pool: dict[Path, JSONFile] = {}
 
 def load(
     path: PathOrSimilar,
-    default_data: JSONSerializable | None = None,
+    default_data: SensibleTopLevelJSON | None = None,
     default_path: PathOrSimilar | None = None,
     *,
     settings: JsonSerializationSettings | None = None,
     auto_save: bool = True,
-    strict: bool = True,
+    strict: bool = False,
     load_file: bool = True,
 ) -> JSONFile:
     """
@@ -43,7 +43,9 @@ def load(
     :param auto_save: if True, context manager will save on exit
     :param strict:
         if True, will throw error if file cannot be read
-        or if default_data is not JSON-serializable
+        if default_data or json in default_path is not JSON-serializable
+        if False, will recover gracefully.
+        Read :ref:`error_handling` for more info
     :param load_file:
         True by default, causes file to be loaded on init.
         Set to False to suppress loading.

@@ -1,8 +1,10 @@
 import json
 from pathlib import Path
 
+import pytest
+
 import singlejson
-from singlejson.fileutils import JSONFile, abs_filename
+from singlejson.fileutils import DefaultNotJSONSerializableError, JSONFile, abs_filename
 
 
 def test_abs_filename_returns_absolute(tmp_path: Path):
@@ -58,3 +60,25 @@ def test_pool_singleton_and_sync(tmp_path: Path):
     # Verify content on disk
     data = json.loads(p.read_text())
     assert data == {"a": 1}
+
+
+def test_error_on_non_jsonserializable_input(tmp_path: Path):
+    f = tmp_path / "test.json"
+    f.write_text('{"a": 1}', encoding="utf-8")
+    with pytest.raises(DefaultNotJSONSerializableError):
+        JSONFile(str(f), default_data=1.07, strict=True)
+
+    jf = JSONFile(str(f), default_data=1.08, strict=False)
+    # Initializing with strict=False should accept and store
+    # the non-JSON-serializable default without raising
+    with pytest.raises(DefaultNotJSONSerializableError):
+        jf.restore_default(strict=True)
+
+    assert jf.json == {"a": 1}
+    # Should work without error
+    jf.restore_default(strict=False)
+    assert jf.json == 1.08
+
+    f = tmp_path / "test2.json"
+    f.write_text("1.08", encoding="utf-8")
+    assert JSONFile(str(f), default_data=1.08).json == 1.08

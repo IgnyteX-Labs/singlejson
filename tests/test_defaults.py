@@ -1,7 +1,13 @@
 import json
 from pathlib import Path
 
-from singlejson.fileutils import JSONFile
+import pytest
+
+from singlejson.fileutils import (
+    DefaultNotJSONSerializableError,
+    JSONDeserializationError,
+    JSONFile,
+)
 
 
 def test_default_data_is_deepcopied(tmp_path: Path):
@@ -68,3 +74,80 @@ def test_default_file_is_copied(tmp_path: Path):
         d = json.load(f)
     assert d == content
     assert jf.json == content
+
+
+def test_strict_init(tmp_path: Path):
+    valid = tmp_path / "valid.json"
+    malformed = tmp_path / "malformed.json"
+    valid.write_text('{"key": "value"}', encoding="utf-8")  # Valid JSON
+    malformed.write_text('{"key": "value",}', encoding="utf-8")  # Malformed JSON
+
+    # Should load fine
+    jf_valid = JSONFile(valid, strict=True)
+    assert jf_valid.json == {"key": "value"}
+
+    # Should raise error on malformed with strict=True
+    with pytest.raises(JSONDeserializationError):
+        JSONFile(malformed, strict=True)
+
+    # Should load fine with strict=False, reverting to default {}
+    jf_malformed = JSONFile(malformed, strict=False)
+    assert jf_malformed.json == {}
+
+    # Test defaults
+    default_data = "{'default_key': 'default_value',}"  # Malformed
+    with pytest.raises(DefaultNotJSONSerializableError):
+        JSONFile(valid, default_data=default_data, strict=True)
+
+    malformed.write_text('{"key": "value",}', encoding="utf-8")  # Malformed JSON
+    jf_with_data = JSONFile(malformed, default_data=default_data, strict=False)
+    # Should not throw an error
+    assert jf_with_data.json == default_data
+
+    with pytest.raises(DefaultNotJSONSerializableError):
+        JSONFile(valid, default_path="nonexistent.json", strict=True)
+
+    malformed.write_text('{"key": "value",}', encoding="utf-8")  # Malformed JSON
+    assert JSONFile(malformed, default_path="nonexistent.json", strict=False).json == {}
+
+    malformed.write_text('{"key": "value",}', encoding="utf-8")  # Malformed JSON
+    with pytest.raises(DefaultNotJSONSerializableError):
+        JSONFile(valid, default_path=malformed, strict=True)
+
+    malformed.write_text('{"key": "value",}', encoding="utf-8")  # Malformed JSON
+    assert JSONFile(malformed, default_path=malformed, strict=False).json == {}
+    # Since the file is malformed and strict mode is off, it should revert to default
+
+
+def test_restore_default_strict_mode(tmp_path: Path):
+    load = tmp_path / "load.json"
+    malformed = tmp_path / "malformed.json"
+    load.write_text('{"key": "value"}', encoding="utf-8")  # Valid JSON
+    malformed.write_text('{"key": "value",}', encoding="utf-8")  # Malformed JSON
+
+    malformed_default = "{'default_key': 'default_value',}"  # Malformed
+    jf_with_data = JSONFile(load, default_data=malformed_default)  # Loading non strict
+
+    with pytest.raises(DefaultNotJSONSerializableError):
+        jf_with_data.restore_default(strict=True)
+
+    jf_with_data.restore_default(strict=False)  # Should not throw an error
+    assert jf_with_data.json == malformed_default
+
+    load.write_text('{"key": "value"}', encoding="utf-8")  # Valid JSON
+    jf_with_no_path = JSONFile(load, default_path="nonexistent.json")
+    with pytest.raises(DefaultNotJSONSerializableError):
+        jf_with_no_path.restore_default(strict=True)
+
+    jf_with_no_path.restore_default(strict=False)
+    # Should not throw an error and revert to {}
+    assert jf_with_no_path.json == {}
+
+    load.write_text('{"key": "value"}', encoding="utf-8")  # Valid JSON
+    jf_with_path = JSONFile(load, default_path=malformed)
+    with pytest.raises(DefaultNotJSONSerializableError):
+        jf_with_path.restore_default(strict=True)
+
+    jf_with_path.restore_default(strict=False)
+    # Should not throw an error and revert to {} since cannot set json to malformed
+    assert jf_with_path.json == {}

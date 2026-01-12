@@ -7,6 +7,10 @@ contains invalid JSON.
 This can be done in multiple ways:
 Pass these options to :class:`singlejson.JSONFile` or :func:`singlejson.load`.
 
+.. note::
+    For information on default verification, see :ref:`error_handling`
+    and specifically the ``strict`` parameter.
+
 ``default_data``
 """"""""""""""""""
 Pass a ``dict`` which will be copied and then used as is.
@@ -47,6 +51,13 @@ Every load call always refers to this file.
     settings = singlejson.load("user_settings.json", default_path=template)
 
 ``default_path`` takes precedence over ``default_data`` if both are provided.
+
+.. tip::
+    If your application ships with default configuration files in
+    ``importlib.resources.files``, use ``(files("your_package") / "path/to/default.json").read_text()``
+    to read the default file contents and pass it to ``default_data``.
+    ``importlib.resources.files`` returns ``Traversable`` objects which are not directly compatible with
+    ``default_path``.
 
 Strict mode
 """"""""""""""""""

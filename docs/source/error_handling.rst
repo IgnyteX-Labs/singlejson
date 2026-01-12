@@ -3,29 +3,61 @@
 Error handling
 --------------
 
-By default, ``singlejson`` recovers from errors by replacing invalid
-or missing files with the specified default data. You can control this behavior
-using the ``strict`` parameter when creating a ``JSONFile`` or using
-:func:`singlejson.load()`. If ``strict=True``, an exception will be raised
-if the file does not exist or contains invalid JSON.
+Graceful recovery from errors
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``singlejson`` defaults to ``strict=False``
+when calling :func:`~singlejson.pool.load()` or instantiating a new :class:`~singlejson.fileutils.JSONFile`.
 
-If the default data is not valid, singlejson will revert to an empty dictionary ``{}``.
+This means that if a JSON file does not exist or contains invalid JSON,
+it will be replaced with the provided default data. A warning will be logged
+in this case.
 
-.. code-block:: python
+If the default data is also invalid JSON, an error will be logged
+and an empty JSON object ``{}`` will be used instead.
 
-   from singlejson import JSONFile, JSONFileError
+Strict mode for validating defaults
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Sometimes it is important to ensure that the default data provided is valid.
 
-   # Non-strict mode (default): recovers to default data
-   jf = JSONFile("not_created.json", default_data={"key": "value"}, strict=False)
-   print(jf.json)  # > {"key": "value"}
+You can do that by setting ``strict=True`` when creating a :class:`~singlejson.fileutils.JSONFile` instance
+or when using :func:`~singlejson.pool.load()`.
+If you want to suppress errors that might occur when loading the real file, set
+``load_file=False`` when creating or :func:`~singlejson.pool.load()` the :class:`~singlejson.fileutils.JSONFile` instance.
 
-   # Strict mode: raises exception on error
-   try:
-       jf_strict = JSONFile("not_created_file.json", default_path="path/to/nonexistent/or/corrupt/file.json", strict=True)
-   except DefaultNotJSONSerializableError as e:
-       print(f"Error loading JSON file: {e}")
+This way only the default data is validated and you can call
+:func:`~singlejson.fileutils.JSONFile.reload()` later with ``strict=False``
+to load the actual file.
 
-Error types in singlejson are:
+.. note::
+    When ``strict`` is set to ``True``, only ``dicts``, ``lists`` and valid ``str`` (as json)
+    work. ``float``, ``int`` are considered non-valid JSON.
+
+Strict mode for error handling
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+If you want fine control over error handling, you can set ``strict=True``.
+
+This will cause ``singlejson`` to raise exceptions when loading a file fails
+**or** when defaults are invalid.
+
+When ``strict=True`` you will need to manage the following exceptions:
+
+- :class:`~singlejson.fileutils.JSONDeserializationError` when the file content is invalid JSON
+- :class:`~singlejson.fileutils.DefaultNotJSONSerializableError` when the specified default contents of the file are invalid JSON
+
+FileAccessError
+^^^^^^^^^^^^^^^^^^^^^^
+
+This exception is **always** raised when the file cannot be accessed
+due to permission issues or other I/O errors. singlejson cannot recover from this,
+so you will need to handle this exception regardless of the ``strict`` setting.
+
+**singlejson will always create files that do not exist without
+error regardless of the ``strict`` setting**
+
+
+Exception types
+^^^^^^^^^^^^^^^^^^
+Below is a list of all exceptions that can be raised by singlejson
 
 - :class:`~singlejson.fileutils.FileAccessError` Called when the file cannot be accessed due to permission issues or other I/O errors. This is **always** raised. singlejson cannot recover from this,
 

@@ -13,7 +13,7 @@ def worker_save(jf: JSONFile, key: str, value, iterations: int = 50):
 
 def worker_reload(jf: JSONFile, iterations: int = 50):
     for _ in range(iterations):
-        jf.reload(recover=True)
+        jf.reload(strict=True)
 
 
 def test_concurrent_save_and_reload(tmp_path):
@@ -35,7 +35,7 @@ def test_concurrent_save_and_reload(tmp_path):
     t3.join()
 
     # final reload to ensure file is readable
-    jf.reload(recover=True)
+    jf.reload(strict=True)
     data = json.loads(p.read_text(encoding="utf-8"))
     assert isinstance(data, dict)
 
