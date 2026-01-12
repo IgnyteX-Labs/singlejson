@@ -24,7 +24,7 @@ def load(
     *,
     settings: JsonSerializationSettings | None = None,
     auto_save: bool = True,
-    strict: bool = True,
+    strict: bool = False,
     load_file: bool = True,
 ) -> JSONFile:
     """
@@ -43,7 +43,8 @@ def load(
     :param auto_save: if True, context manager will save on exit
     :param strict:
         if True, will throw error if file cannot be read
-        or if default_data is not JSON-serializable
+        if default_data or json in default_path is not JSON-serializable
+        if False, will recover gracefully
     :param load_file:
         True by default, causes file to be loaded on init.
         Set to False to suppress loading.

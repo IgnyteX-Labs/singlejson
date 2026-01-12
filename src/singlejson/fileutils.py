@@ -154,6 +154,7 @@ class JSONFile:
         :param strict:
             if True, will throw error if file cannot be read or
             if default_data or json in default_path is not JSON-serializable
+            if False, will recover gracefully
         :param load_file:
             True by default, causes file to be loaded on init.
             Set to False to suppress loading.
