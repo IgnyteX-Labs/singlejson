@@ -244,7 +244,7 @@ class JSONFile:
         else:
             self.json = None
 
-    def restore_default(self, strict: bool) -> None:
+    def restore_default(self, strict: bool = False) -> None:
         """
         Revert the file to the default either by copying the default to the file path
         or by writing the default data to the file.
