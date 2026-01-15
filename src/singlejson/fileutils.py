@@ -58,6 +58,9 @@ def _atomic_write_text(path: Path, text: str, encoding: str = "utf-8") -> None:
     Write text to a path atomically by writing to a temp file and then replacing.
     Ensures the directory exists.
     Uses os.replace for atomicity so readers never see a partial write.
+
+    :param path: Path to write to
+    :param encoding: Encoding to use
     """
     try:
         if str(path.parent):  # Avoid creating ''
@@ -76,7 +79,12 @@ def _atomic_write_text(path: Path, text: str, encoding: str = "utf-8") -> None:
 
 
 def _atomic_copy_file(src: Path, dest: Path) -> None:
-    """Copy a file into dest atomically by copying to a temp file and then replacing."""
+    """
+    Copy a file into dest atomically by copying to a temp file and then replacing.
+
+    :param src: filepath to copy from
+    :param dest: filepath to copy to
+    """
     dest.parent.mkdir(parents=True, exist_ok=True)
     # create temp file name in destination dir
     with NamedTemporaryFile("wb", dir=dest.parent, delete=False, suffix=".tmp") as tf:
@@ -244,7 +252,7 @@ class JSONFile:
         else:
             self.json = None
 
-    def restore_default(self, strict: bool = False) -> None:
+    def restore_default(self, strict: bool = False, preserve: bool = False) -> None:
         """
         Revert the file to the default either by copying the default to the file path
         or by writing the default data to the file.
@@ -254,6 +262,8 @@ class JSONFile:
             if default_data or json in default_path is not JSON-serializable
             if False, will recover gracefully.
             Read :ref:`error_handling` for more info
+        :param preserve:
+            Preserve the existing file by renaming it to <filename>.old.x.ext
         :raises ~singlejson.fileutils.DefaultNotJSONSerializableError:
             if default data is not JSON-serializable and ``strict`` is true
         :raises ~singlejson.fileutils.FileAccessError:
