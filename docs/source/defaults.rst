@@ -60,7 +60,7 @@ Every load call always refers to this file.
     ``default_path``.
 
 Strict mode
-""""""""""""""""""
+"""""""""""""""
 You can also pass the option ``strict`` which checks defaults before
 loading for the first time.
 If ``strict=True`` (the default), an exception is raised if the default file does not exist
@@ -78,4 +78,9 @@ or contains invalid JSON, or if the provided ``default_data`` is not JSON-serial
     except DefaultNotJSONSerializableError as e:
         print(f"Caught expected error: {e}")
 
-
+Preserve existing files
+""""""""""""""""""""
+Pass ``preserve=True`` (or set it on the ``JSONFile`` instance) to keep the
+previous on-disk file when recovery writes defaults. The old file is renamed to
+``<name>.old.<n>.json`` so you can inspect or restore it later. ``preserve=None``
+uses the instance setting (False by default).

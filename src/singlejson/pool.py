@@ -24,6 +24,7 @@ def load(
     *,
     settings: JsonSerializationSettings | None = None,
     auto_save: bool = True,
+    preserve: bool | None = None,
     strict: bool = False,
     load_file: bool = True,
 ) -> JSONFile:
@@ -41,6 +42,9 @@ def load(
         Path to a JSON file to use as default data.
     :param settings: JsonSerializationSettings object
     :param auto_save: if True, context manager will save on exit
+    :param preserve:
+        Preserve the existing file by renaming it to <filename>.old.x.ext
+        before writing defaults during recovery. ``None`` uses the instance default.
     :param strict:
         if True, will throw error if file cannot be read
         if default_data or json in default_path is not JSON-serializable
@@ -69,6 +73,7 @@ def load(
                 default_data=default_data,
                 default_path=default_path,
                 auto_save=auto_save,
+                preserve=preserve,
                 settings=settings,
                 strict=strict,
                 load_file=load_file,
