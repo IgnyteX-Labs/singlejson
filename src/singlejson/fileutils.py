@@ -60,6 +60,7 @@ def _atomic_write_text(path: Path, text: str, encoding: str = "utf-8") -> None:
     Uses os.replace for atomicity so readers never see a partial write.
 
     :param path: Path to write to
+    :param text: Text content to write to the file
     :param encoding: Encoding to use
     """
     try:
@@ -422,8 +423,8 @@ class JSONFile:
             Read :ref:`error_handling` for more info
         :param preserve:
             Preserve the existing file by renaming it to <filename>.old.x.ext
-            before writing defaults during recovery. Defaults to the instance
-            setting provided at construction time.
+            before writing defaults during recovery. ``None`` uses the instance
+            setting (False unless changed).
         :type strict: bool
 
         :raises ~singlejson.fileutils.FileAccessError:
