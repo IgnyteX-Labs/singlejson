@@ -482,7 +482,7 @@ class JSONFile:
                     sort_keys=settings.sort_keys,
                     ensure_ascii=settings.ensure_ascii,
                 )
-                _atomic_write_text(self.__path, text, encoding=self.settings.encoding)
+                _atomic_write_text(self.__path, text, encoding=settings.encoding)
             except (PermissionError, OSError) as e:
                 raise FileAccessError(f"Cannot write file '{self.__path}': {e}") from e
 
