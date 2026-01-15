@@ -20,6 +20,10 @@ You can do multiple operations on the entire pool of loaded files
 using :func:`singlejson.sync()` and :func:`singlejson.reset()`
 to clear the pool with and without saving.
 
+When you need to keep a copy of the on-disk file before recovery overwrites it,
+pass ``preserve=True`` (or ``None`` to defer to the instance setting) to
+:func:`singlejson.load()`; backups are written as ``<name>.old.<n>.json``.
+
 You can also use :func:`singlejson.close()` to remove a specific file from the pool.
 
 I like to use :func:`singlejson.sync()` at program exit with a 3 second wait to give
@@ -39,4 +43,3 @@ the user time to cancel all pending writes in case of unwanted changes.
     print("Saving, press Ctrl+C to cancel...")
     sleep(3)
     sync()
-
