@@ -33,17 +33,18 @@ To install the git hooks, run:
 Running Tests and Linting
 -------------------------
 
-You can run all quality checks (lint, typecheck, and tests) using:
+You can run all quality checks (lint, format, typecheck, and tests) using:
 
 .. code-block:: bash
 
-    make all
+    make check
 
 Individual checks:
 
 .. code-block:: bash
 
-    make lint       # Run ruff
+    make lint       # Run ruff check
+    make format     # Run ruff format
     make typecheck  # Run mypy
     make test       # Run pytest
 

@@ -1,7 +1,7 @@
-.PHONY: install test lint typecheck docs build clean all help
+.PHONY: install test lint format typecheck docs build clean check help
 
 # Default target
-all: lint typecheck test
+check: lint format typecheck test
 
 help:
 	@echo "Available targets:"
@@ -22,7 +22,10 @@ test:
 	uv run pytest
 
 lint:
-	uv run ruff check
+	uv run ruff check --fix
+
+format:
+	uv run ruff format .
 
 typecheck:
 	uv run mypy src
