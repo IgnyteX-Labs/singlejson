@@ -1,5 +1,7 @@
+import json
+
 from singlejson.fileutils import JSONFile
-from singlejson.pool import load, sync
+from singlejson.pool import load, reset, sync
 
 
 def test_pool(tmp_path):
@@ -21,3 +23,18 @@ def test_pool(tmp_path):
         JSONFile(path, default_data={"test": "successful"}).json["test"]
         == "unsuccessful"
     ), "should be unsuccessful since changes to pool should have been saved."
+
+
+def test_pool_load_preserve(tmp_path):
+    path = tmp_path / "pool.json"
+    path.write_text("{ invalid json", encoding="utf-8")
+    reset()
+
+    jf = load(path, default_data={"ok": True}, preserve=True, strict=False)
+
+    assert jf.json == {"ok": True}
+    assert json.loads(path.read_text(encoding="utf-8")) == {"ok": True}
+    preserved = tmp_path / "pool.old.1.json"
+    assert preserved.exists()
+    assert preserved.read_text(encoding="utf-8") == "{ invalid json"
+    reset()

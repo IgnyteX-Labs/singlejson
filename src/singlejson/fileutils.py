@@ -134,6 +134,7 @@ class JSONFile:
     settings: JsonSerializationSettings
     """Serialization settings of this instance"""
     __auto_save: bool
+    __preserve: bool
 
     def __init__(
         self,
@@ -143,6 +144,7 @@ class JSONFile:
         *,
         settings: JsonSerializationSettings | None = None,
         auto_save: bool = True,
+        preserve: bool | None = None,
         strict: bool = False,
         load_file: bool = True,
     ) -> None:
@@ -160,6 +162,10 @@ class JSONFile:
             Path to a JSON file to use as default data.
         :param settings: JsonSerializationSettings object
         :param auto_save: if True, context manager will save on exit
+        :param preserve:
+            Preserve the existing file by renaming it to <filename>.old.x.ext
+            before writing defaults during recovery. ``None`` uses the instance
+            default (False unless set later).
         :param strict:
             if True, will throw error if file cannot be read or
             if default_data or json in default_path is not JSON-serializable
@@ -178,6 +184,7 @@ class JSONFile:
         self.__path = abs_filename(path)
         self.settings = settings or DEFAULT_SERIALIZATION_SETTINGS
         self.__auto_save = auto_save
+        self.__preserve = bool(preserve) if preserve is not None else False
         # Per-instance reentrant lock to make file operations thread-safe
         self._lock = threading.RLock()
 
@@ -248,11 +255,22 @@ class JSONFile:
             self.__default_data = {}
         # Load from disk (this will create the file if needed and apply defaults)
         if load_file:
-            self.reload(strict=strict)
+            self.reload(strict=strict, preserve=preserve)
         else:
             self.json = None
 
-    def restore_default(self, strict: bool = False, preserve: bool = False) -> None:
+    @property
+    def preserve(self) -> bool:
+        """Whether to keep backups of existing files during recovery."""
+        return self.__preserve
+
+    @preserve.setter
+    def preserve(self, value: bool) -> None:
+        self.__preserve = bool(value)
+
+    def restore_default(
+        self, strict: bool = False, preserve: bool | None = None
+    ) -> None:
         """
         Revert the file to the default either by copying the default to the file path
         or by writing the default data to the file.
@@ -264,11 +282,38 @@ class JSONFile:
             Read :ref:`error_handling` for more info
         :param preserve:
             Preserve the existing file by renaming it to <filename>.old.x.ext
+            before writing defaults during recovery. ``None`` uses the instance
+            setting.
         :raises ~singlejson.fileutils.DefaultNotJSONSerializableError:
             if default data is not JSON-serializable and ``strict`` is true
         :raises ~singlejson.fileutils.FileAccessError:
             if file cannot be accessed (always)
         """
+
+        def _next_preserved_path(path: Path) -> Path:
+            suffix = "".join(path.suffixes)
+            name = path.name
+            stem = name[: -len(suffix)] if suffix else name
+            counter = 1
+            while True:
+                candidate = path.with_name(f"{stem}.old.{counter}{suffix}")
+                if not candidate.exists():
+                    return candidate
+                counter += 1
+
+        actual_preserve = self.__preserve if preserve is None else preserve
+
+        def _preserve_current_file() -> None:
+            if not actual_preserve or not self.__path.exists():
+                return
+            try:
+                target = _next_preserved_path(self.__path)
+                self.__path.rename(target)
+            except Exception as e:
+                raise FileAccessError(
+                    f"Could not preserve existing file '{self.__path}': {e}"
+                ) from e
+
         with self._lock:
             if self.__default_path:
                 default_path = Path(self.__default_path)
@@ -291,6 +336,7 @@ class JSONFile:
                                 f"Cannot load default JSON from file "
                                 f"'{default_path}': {e}"
                             ) from e
+                    _preserve_current_file()
                     _atomic_copy_file(default_path, self.__path)
                 else:
                     # Default file does not exist, create empty file
@@ -302,6 +348,7 @@ class JSONFile:
                         "Default JSON file '%s' does not exist!\nWriting empty {}!",
                         default_path,
                     )
+                    _preserve_current_file()
                     _atomic_write_text(
                         self.__path, "{}", encoding=self.settings.encoding
                     )
@@ -321,18 +368,12 @@ class JSONFile:
                             f"default_data for '{self.__path}' isn't JSON-serializable!"
                         ) from e
 
-                # Data is now dict or list (as load only returns those two types
-                # without errors) or we are not strict in which case we do whatever
-                # we want and try to recover.
                 try:
                     text = dumps(
                         self.__default_data,
                         indent=self.settings.indent,
                         sort_keys=self.settings.sort_keys,
                         ensure_ascii=self.settings.ensure_ascii,
-                    )
-                    _atomic_write_text(
-                        self.__path, text, encoding=self.settings.encoding
                     )
                 except (TypeError, ValueError, json.JSONDecodeError) as e:
                     if strict:
@@ -347,9 +388,10 @@ class JSONFile:
                         self.__path,
                         e,
                     )
-                    _atomic_write_text(
-                        self.__path, "{}", encoding=self.settings.encoding
-                    )
+                    text = "{}"
+
+                _preserve_current_file()
+                _atomic_write_text(self.__path, text, encoding=self.settings.encoding)
 
             # Now try loading the default we just wrote
             try:
@@ -368,16 +410,7 @@ class JSONFile:
                 _atomic_write_text(self.__path, "{}", encoding=self.settings.encoding)
                 self.json = {}
 
-    @property
-    def path(self) -> Path:
-        """
-        Return the absolute path of the file.
-
-        :return: absolute path
-        """
-        return self.__path
-
-    def reload(self, strict: bool = False) -> None:
+    def reload(self, strict: bool = False, preserve: bool | None = None) -> None:
         """
         Reload from disk, recovering to default on invalid JSON.
         Always raises FileAccessError on permission issues.
@@ -387,6 +420,10 @@ class JSONFile:
             if default_data or json in default_path is not JSON-serializable
             if False, will recover gracefully.
             Read :ref:`error_handling` for more info
+        :param preserve:
+            Preserve the existing file by renaming it to <filename>.old.x.ext
+            before writing defaults during recovery. Defaults to the instance
+            setting provided at construction time.
         :type strict: bool
 
         :raises ~singlejson.fileutils.FileAccessError:
@@ -396,10 +433,11 @@ class JSONFile:
         """
         # Use the per-instance lock to guard load/recovery operations
         with self._lock:
+            actual_preserve = self.__preserve if preserve is None else preserve
             # 1: See if file exists
             if not self.__path.exists():
                 # Create file with no data
-                self.restore_default(strict)
+                self.restore_default(strict, preserve=actual_preserve)
             # 2: File now surely exists
             try:
                 with self.__path.open("r", encoding=self.settings.encoding) as file:
@@ -418,7 +456,7 @@ class JSONFile:
                     self.__path,
                     e,
                 )
-                self.restore_default(strict)
+                self.restore_default(strict, preserve=actual_preserve)
                 # Don't retry loading here; restore_default() now handles recovery
 
     def save(self, settings: JsonSerializationSettings | None = None) -> None:

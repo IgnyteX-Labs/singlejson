@@ -122,3 +122,33 @@ def test_default_data_non_serializable_reload_recover_behavior(tmp_path):
         jf2.reload(strict=True)
     jf2.reload(strict=False)
     assert jf2.json == {}
+
+
+def test_reload_invalid_json_preserve_keeps_original(tmp_path):
+    p = tmp_path / "bad.json"
+    write_text(p, "{ invalid json")
+    jf = JSONFile(p, default_data={"ok": True}, load_file=False)
+    jf.reload(strict=False, preserve=True)
+
+    assert jf.json == {"ok": True}
+    assert read_json(p) == {"ok": True}
+    preserved = tmp_path / "bad.old.1.json"
+    assert preserved.exists()
+    assert preserved.read_text(encoding="utf-8") == "{ invalid json"
+
+
+def test_reload_preserve_uses_incrementing_suffix(tmp_path):
+    p = tmp_path / "bad.json"
+    write_text(p, "{ invalid json")
+    jf = JSONFile(p, default_data={"ok": True}, load_file=False)
+    jf.reload(strict=False, preserve=True)
+
+    write_text(p, "{ invalid json second")
+    jf.reload(strict=False, preserve=True)
+
+    preserved1 = tmp_path / "bad.old.1.json"
+    preserved2 = tmp_path / "bad.old.2.json"
+    assert preserved1.exists()
+    assert preserved2.exists()
+    assert preserved1.read_text(encoding="utf-8") == "{ invalid json"
+    assert preserved2.read_text(encoding="utf-8") == "{ invalid json second"
