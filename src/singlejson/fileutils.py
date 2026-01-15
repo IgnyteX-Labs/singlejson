@@ -212,7 +212,7 @@ class JSONFile:
                         f"Default JSON file '{path}' does not exist."
                     )
             # Whether checked or not, use default_path default initialization method.
-            self.__default_path = default_path
+            self.__default_path = abs_filename(default_path)
 
         elif default_data is not None:
             # Default data and no default_path
@@ -221,7 +221,7 @@ class JSONFile:
                 raise DefaultNotJSONSerializableError(
                     f"Default data for '{self.__path}' is not JSON-serializable! \n"
                     "It must be a dict, list or string! \n"
-                    f"Got type: {type(self.__default_data)}"
+                    f"Got type: {type(default_data)}"
                 )
             elif isinstance(default_data, str) and strict:
                 try:
@@ -430,7 +430,7 @@ class JSONFile:
         :raises ~singlejson.fileutils.FileAccessError:
             if file cannot be accessed (always)
         :raises ~singlejson.fileutils.DefaultNotJSONSerializableError:
-            if recover is False and JSON is invalid
+            if strict is True and JSON is invalid
         """
         # Use the per-instance lock to guard load/recovery operations
         with self._lock:
