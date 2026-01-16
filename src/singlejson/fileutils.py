@@ -370,12 +370,17 @@ class JSONFile:
                         ) from e
 
                 try:
-                    text = dumps(
-                        self.__default_data,
-                        indent=self.settings.indent,
-                        sort_keys=self.settings.sort_keys,
-                        ensure_ascii=self.settings.ensure_ascii,
-                    )
+                    if isinstance(self.__default_data, str):
+                        # For string defaults, treat the text as JSON content directly
+                        text = self.__default_data
+                        # we check if it's valid JSON above if strict=True
+                    else:
+                        text = dumps(
+                            self.__default_data,
+                            indent=self.settings.indent,
+                            sort_keys=self.settings.sort_keys,
+                            ensure_ascii=self.settings.ensure_ascii,
+                        )
                 except (TypeError, ValueError, json.JSONDecodeError) as e:
                     if strict:
                         raise DefaultNotJSONSerializableError(

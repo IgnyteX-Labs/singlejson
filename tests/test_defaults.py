@@ -101,8 +101,8 @@ def test_strict_init(tmp_path: Path):
 
     malformed.write_text('{"key": "value",}', encoding="utf-8")  # Malformed JSON
     jf_with_data = JSONFile(malformed, default_data=default_data, strict=False)
-    # Should not throw an error
-    assert jf_with_data.json == default_data
+    # Should not throw an error, fallback to empty since default is invalid JSON text
+    assert jf_with_data.json == {}
 
     with pytest.raises(DefaultNotJSONSerializableError):
         JSONFile(valid, default_path="nonexistent.json", strict=True)
@@ -119,6 +119,29 @@ def test_strict_init(tmp_path: Path):
     # Since the file is malformed and strict mode is off, it should revert to default
 
 
+def test_string_default_writes_json(tmp_path: Path):
+    path = tmp_path / "string_default.json"
+    default_data = '{"hello": "world", "num": 5}'
+
+    jf = JSONFile(path, default_data=default_data)
+
+    assert jf.json == {"hello": "world", "num": 5}
+    # Ensure the file content is JSON object, not a quoted string
+    with path.open("r", encoding="utf-8") as f:
+        assert json.load(f) == {"hello": "world", "num": 5}
+
+
+def test_invalid_string_default_falls_back(tmp_path: Path):
+    path = tmp_path / "invalid_string_default.json"
+    default_data = '{"hello": "world",}'  # Invalid JSON text
+
+    jf = JSONFile(path, default_data=default_data, strict=False)
+
+    assert jf.json == {}
+    with path.open("r", encoding="utf-8") as f:
+        assert json.load(f) == {}
+
+
 def test_restore_default_strict_mode(tmp_path: Path):
     load = tmp_path / "load.json"
     malformed = tmp_path / "malformed.json"
@@ -132,7 +155,7 @@ def test_restore_default_strict_mode(tmp_path: Path):
         jf_with_data.restore_default(strict=True)
 
     jf_with_data.restore_default(strict=False)  # Should not throw an error
-    assert jf_with_data.json == malformed_default
+    assert jf_with_data.json == {}
 
     load.write_text('{"key": "value"}', encoding="utf-8")  # Valid JSON
     jf_with_no_path = JSONFile(load, default_path="nonexistent.json")
